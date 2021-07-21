@@ -88,20 +88,23 @@ async function main() {
                 const buildDir = path_1.dirname(profDataFile).replace(/(Build).*/, '$1');
                 core.debug(`Checking contents of build dir ${buildDir} of prof data file ${profDataFile}`);
                 for await (const file of forEachFiles(buildDir)) {
-                    const typesRegex = /.*(app|framework|xctest)$/;
+                    const typesRegex = /.*\.(app|framework|xctest)$/;
                     if (!typesRegex.test(file))
                         continue;
                     const type = file.replace(typesRegex, '$1');
+                    core.debug(`Found match of type ${type} in prof data file: ${file}`);
                     const proj = file
                         .replace(/.*\//, '')
                         .replace(`.${type}`, '');
+                    core.debug('Project name: ' + proj);
                     const destStat = await fs_1.promises.stat(path.join(file, proj));
                     const dest = destStat.isFile() ? path.join(file, proj) : path.join(file, 'Contents', 'MacOS', proj);
                     const destName = dest.replace(/\s/g, '');
-                    const outFile = path.join(outputFolder, `${destName}.${type}.coverage.txt`);
                     const converted = await runCmd('xcrun', [
                         'llvm-cov', 'show', '-instr-profile', profDataFile, dest,
                     ]);
+                    const outFile = path.join(outputFolder, `${destName}.${type}.coverage.txt`);
+                    core.debug('Writing coverage report to ' + outFile);
                     await fs_1.promises.writeFile(outFile, converted);
                     outFiles.push(outFile);
                 }
