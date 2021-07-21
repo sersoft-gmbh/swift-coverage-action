@@ -32,6 +32,7 @@ const io = __importStar(__nccwpck_require__(202));
 const fs_1 = __nccwpck_require__(747);
 const path_1 = __nccwpck_require__(622);
 const path = __importStar(__nccwpck_require__(622));
+const os = __importStar(__nccwpck_require__(87));
 async function runCmd(cmd, args) {
     let stdOut = '';
     await exec.exec(cmd, args, {
@@ -60,8 +61,10 @@ async function main() {
         throw new Error('This action only supports macOS!');
     }
     core.startGroup('Validating input');
-    const derivedData = core.getInput('derived-data', { required: true });
-    const outputFolder = core.getInput('output', { required: true });
+    const derivedData = core.getInput('derived-data', { required: true })
+        .replace(/(~|\$HOME|\${HOME})/g, os.homedir);
+    const outputFolder = core.getInput('output', { required: true })
+        .replace(/(~|\$HOME|\${HOME})/g, os.homedir);
     core.endGroup();
     await core.group('Setting up paths', async () => {
         await io.rmRF(outputFolder);
