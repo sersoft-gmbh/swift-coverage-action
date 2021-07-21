@@ -76,6 +76,7 @@ async function main() {
         for await (const file of forEachFiles(derivedData)) {
             if (profDataRegex.test(file)) {
                 profDataFiles.push(file);
+                core.debug('Found profdata file: ' + file);
             }
         }
         return profDataFiles;
@@ -89,6 +90,7 @@ async function main() {
             let outFiles = [];
             for (const profDataFile of profDataFiles) {
                 const buildDir = path_1.dirname(profDataFile).replace(buildDirRegex, '$1');
+                core.debug(`Checking contents of build dir ${buildDir} of prof data file ${profDataFile}`);
                 for await (const file of forEachFiles(buildDir)) {
                     if (!typesRegex.test(file))
                         continue;
