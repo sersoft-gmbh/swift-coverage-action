@@ -90,9 +90,11 @@ async function main() {
                 const buildDir = path_1.dirname(profDataFile).replace(/(Build).*/, '$1');
                 core.debug(`Checking contents of build dir ${buildDir} of prof data file ${profDataFile}`);
                 for await (const entry of walk(buildDir, false)) {
-                    const typesRegex = /.*\.(app|framework|xctest)$/;
-                    if (!typesRegex.test(entry.path))
+                    const typesRegex = /.*\.(app|framework|xctest)\/?$/;
+                    if (!typesRegex.test(entry.path)) {
+                        core.debug(`Entry path ${entry.path} does not match type regex ${typesRegex.source}...`);
                         continue;
+                    }
                     const type = entry.path.replace(typesRegex, '$1');
                     core.debug(`Found match of type ${type} in prof data file: ${entry.path}`);
                     const proj = entry.path
