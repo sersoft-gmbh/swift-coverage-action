@@ -1,0 +1,33 @@
+{
+  "name": "xcode-coverage-action",
+  "version": "1.0.0",
+  "description": "A GitHub action that converts Xcode code coverage files.",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "deploy": "rm -rf node_modules dist && npm install && npm run build && ncc build lib/main.js -o dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sersoft-gmbh/xcode-coverage-action.git"
+  },
+  "keywords": [
+    "Swift",
+    "Jazzy"
+  ],
+  "author": "ser.soft GmbH",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/sersoft-gmbh/xcode-coverage-action/issues"
+  },
+  "homepage": "https://github.com/sersoft-gmbh/xcode-coverage-action#readme",
+  "dependencies": {
+    "@actions/core": "^1.4.0",
+    "@actions/exec": "^1.1.0",
+    "@actions/io": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^12.20.16"
+  }
+}
