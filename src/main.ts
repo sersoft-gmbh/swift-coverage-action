@@ -4,6 +4,7 @@ import * as io from '@actions/io';
 import { promises as fs } from 'fs';
 import { resolve, dirname } from 'path';
 import * as path from "path";
+import * as os from "os";
 
 async function runCmd(cmd: string, args?: string[]): Promise<string> {
     let stdOut = '';
@@ -35,8 +36,10 @@ async function main() {
     }
 
     core.startGroup('Validating input');
-    const derivedData = core.getInput('derived-data', {required: true});
-    const outputFolder = core.getInput('output', {required: true});
+    const derivedData = core.getInput('derived-data', {required: true})
+        .replace(/(~|\$HOME|\${HOME})/g, os.homedir);
+    const outputFolder = core.getInput('output', {required: true})
+        .replace(/(~|\$HOME|\${HOME})/g, os.homedir);
     core.endGroup();
 
     await core.group('Setting up paths', async () => {
