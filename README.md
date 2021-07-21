@@ -18,6 +18,12 @@ The path to the output folder. Note that this folder will be deleted / overwritt
 You should probably put it in `.gitignore`.<br/>
 Default: `./.xcodecov`
 
+## Outputs
+
+### `files`
+
+The JSON encoded array of file-paths that were written. They are all contained inside the directory specified in the `output` input.
+
 ## Example Usage
 
 Use the following snippet after running tests with Xcode and coverage to convert those coverage files:

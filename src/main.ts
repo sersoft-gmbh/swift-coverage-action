@@ -1,7 +1,7 @@
 import * as core from '@actions/core';
 import * as exec from '@actions/exec';
 import * as io from '@actions/io';
-import { promises as fs } from 'fs';
+import {promises as fs, existsSync as exists, PathLike} from 'fs';
 import { resolve, dirname } from 'path';
 import * as path from "path";
 import * as os from "os";
@@ -35,6 +35,12 @@ async function* walk(dir: string, onlyFiles: boolean = true): AsyncGenerator<Wal
             yield { path: res, isDirectory: false };
         }
     }
+}
+
+async function fileExists(path: PathLike): Promise<boolean> {
+    if (!exists(path)) return false;
+    const stat = await fs.stat(path);
+    return stat.isFile();
 }
 
 async function main() {
@@ -73,23 +79,23 @@ async function main() {
                 const buildDir = dirname(profDataFile).replace(/(Build).*/, '$1');
                 core.debug(`Checking contents of build dir ${buildDir} of prof data file ${profDataFile}`);
                 for await (const entry of walk(buildDir, false)) {
-                    const typesRegex = /.*\.(app|framework|xctest)\/?$/;
-                    if (!typesRegex.test(entry.path)) {
-                        core.debug(`Skipping ${entry.path}`);
-                        continue;
-                    }
+                    const typesRegex = /.*\.(app|framework|xctest)$/;
+                    if (!typesRegex.test(entry.path)) continue;
                     const type = entry.path.replace(typesRegex, '$1');
                     core.debug(`Found match of type ${type}: ${entry.path}`);
                     const proj = entry.path
                         .replace(/.*\//, '')
                         .replace(`.${type}`, '');
                     core.debug('Project name: ' + proj);
-                    const destStat = await fs.stat(path.join(entry.path, proj));
-                    const dest = destStat.isFile() ? path.join(entry.path, proj) : path.join(entry.path, 'Contents', 'MacOS', proj);
-                    const destName = dest.replace(/\s/g, '');
+
+                    let dest = path.join(entry.path, proj);
+                    if (!await fileExists(dest)) {
+                        dest = path.join(entry.path, 'Contents', 'MacOS', proj);
+                    }
                     const converted = await runCmd('xcrun', [
                         'llvm-cov', 'show', '-instr-profile', profDataFile, dest,
                     ]);
+                    const destName = dest.replace(/\s/g, '');
                     const outFile = path.join(outputFolder, `${destName}.${type}.coverage.txt`);
                     core.debug('Writing coverage report to ' + outFile);
                     await fs.writeFile(outFile, converted);

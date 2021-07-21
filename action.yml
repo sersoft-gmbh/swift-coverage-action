@@ -10,6 +10,9 @@ inputs:
     description: The path to the output folder to put the converted coverage files in.
     required: true
     default: './.xcodecov'
+outputs:
+  files:
+    description: The JSON-encoded array of file-paths that were converted.
 runs:
   using: node12
   main: dist/index.js
