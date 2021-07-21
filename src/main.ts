@@ -30,7 +30,7 @@ async function* walk(dir: string, onlyFiles: boolean = true): AsyncGenerator<Wal
         if (entry.isDirectory()) {
             if (!onlyFiles)
                 yield { path: res, isDirectory: true };
-            yield* walk(res);
+            yield* walk(res, onlyFiles);
         } else {
             yield { path: res, isDirectory: false };
         }
@@ -75,11 +75,11 @@ async function main() {
                 for await (const entry of walk(buildDir, false)) {
                     const typesRegex = /.*\.(app|framework|xctest)\/?$/;
                     if (!typesRegex.test(entry.path)) {
-                        core.debug(`Entry path ${entry.path} does not match type regex ${typesRegex.source}...`);
+                        core.debug(`Skipping ${entry.path}`);
                         continue;
                     }
                     const type = entry.path.replace(typesRegex, '$1');
-                    core.debug(`Found match of type ${type} in prof data file: ${entry.path}`);
+                    core.debug(`Found match of type ${type}: ${entry.path}`);
                     const proj = entry.path
                         .replace(/.*\//, '')
                         .replace(`.${type}`, '');
