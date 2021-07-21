@@ -95,7 +95,7 @@ async function main() {
                     const converted = await runCmd('xcrun', [
                         'llvm-cov', 'show', '-instr-profile', profDataFile, dest,
                     ]);
-                    const destName = dest.replace(/\s/g, '');
+                    const destName = proj.replace(/\s/g, '');
                     const outFile = path.join(outputFolder, `${destName}.${type}.coverage.txt`);
                     core.debug('Writing coverage report to ' + outFile);
                     await fs.writeFile(outFile, converted);
