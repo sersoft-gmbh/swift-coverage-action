@@ -19,7 +19,7 @@ jobs:
       - uses: sersoft-gmbh/xcodebuild-action@v1.5.0
         with:
           spm-package: __test__/TestProject
-          scheme: TestProject-package
+          scheme: TestProject-Package
           action: test
           enable-code-coverage: true
           parallel-testing-enabled: true
