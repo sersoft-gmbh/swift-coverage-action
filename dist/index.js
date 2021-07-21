@@ -44,15 +44,17 @@ async function runCmd(cmd, args) {
     return stdOut;
 }
 // Taken and adjusted from https://stackoverflow.com/a/65415138/1388842
-async function* forEachFiles(dir) {
+async function* walk(dir, onlyFiles = true) {
     const entries = await fs_1.promises.readdir(dir, { withFileTypes: true });
     for (const entry of entries) {
         const res = path_1.resolve(dir, entry.name);
         if (entry.isDirectory()) {
-            yield* forEachFiles(res);
+            if (!onlyFiles)
+                yield { path: res, isDirectory: true };
+            yield* walk(res);
         }
         else {
-            yield res;
+            yield { path: res, isDirectory: false };
         }
     }
 }
@@ -72,10 +74,10 @@ async function main() {
     });
     const profDataFiles = await core.group('Finding coverage files', async () => {
         let profDataFiles = [];
-        for await (const file of forEachFiles(derivedData)) {
-            if (/.*\.profdata$/.test(file)) {
-                profDataFiles.push(file);
-                core.debug('Found profdata file: ' + file);
+        for await (const entry of walk(derivedData, true)) {
+            if (/.*\.profdata$/.test(entry.path)) {
+                profDataFiles.push(entry.path);
+                core.debug('Found profdata file: ' + entry.path);
             }
         }
         return profDataFiles;
@@ -87,18 +89,18 @@ async function main() {
             for (const profDataFile of profDataFiles) {
                 const buildDir = path_1.dirname(profDataFile).replace(/(Build).*/, '$1');
                 core.debug(`Checking contents of build dir ${buildDir} of prof data file ${profDataFile}`);
-                for await (const file of forEachFiles(buildDir)) {
+                for await (const entry of walk(buildDir, false)) {
                     const typesRegex = /.*\.(app|framework|xctest)$/;
-                    if (!typesRegex.test(file))
+                    if (!typesRegex.test(entry.path))
                         continue;
-                    const type = file.replace(typesRegex, '$1');
-                    core.debug(`Found match of type ${type} in prof data file: ${file}`);
-                    const proj = file
+                    const type = entry.path.replace(typesRegex, '$1');
+                    core.debug(`Found match of type ${type} in prof data file: ${entry.path}`);
+                    const proj = entry.path
                         .replace(/.*\//, '')
                         .replace(`.${type}`, '');
                     core.debug('Project name: ' + proj);
-                    const destStat = await fs_1.promises.stat(path.join(file, proj));
-                    const dest = destStat.isFile() ? path.join(file, proj) : path.join(file, 'Contents', 'MacOS', proj);
+                    const destStat = await fs_1.promises.stat(path.join(entry.path, proj));
+                    const dest = destStat.isFile() ? path.join(entry.path, proj) : path.join(entry.path, 'Contents', 'MacOS', proj);
                     const destName = dest.replace(/\s/g, '');
                     const converted = await runCmd('xcrun', [
                         'llvm-cov', 'show', '-instr-profile', profDataFile, dest,
