@@ -24,6 +24,6 @@ final class MainObjectTests: XCTestCase {
         let cls = SomeClass()
         var stream = Stream()
         cls.sayHello(to: &stream)
-        XCTAssertEqual(stream.finalize(), "Hello")
+        XCTAssertEqual(stream.finalize(), "Hello\n")
     }
 }
