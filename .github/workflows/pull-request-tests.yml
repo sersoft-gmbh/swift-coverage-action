@@ -25,5 +25,6 @@ jobs:
           parallel-testing-enabled: true
       - uses: './'
       - name: Check for produced coverage files
-        run: test -d .xcodecov
-        # We can't really check for more here, since we don't specify more.
+        run: | # check that the directory exists and contains files
+          test -d .xcodecov && \
+          test "$(find '.xcodecov' -name '*.txt')" != ''
