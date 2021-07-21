@@ -71,10 +71,9 @@ async function main() {
         await io.mkdirP(outputFolder);
     });
     const profDataFiles = await core.group('Finding coverage files', async () => {
-        const profDataRegex = /.*\.profdata$/.compile();
         let profDataFiles = [];
         for await (const file of forEachFiles(derivedData)) {
-            if (profDataRegex.test(file)) {
+            if (/.*\.profdata$/.test(file)) {
                 profDataFiles.push(file);
                 core.debug('Found profdata file: ' + file);
             }
@@ -84,19 +83,17 @@ async function main() {
     let outFiles;
     if (profDataFiles.length > 0) {
         outFiles = await core.group('Converting files', async () => {
-            const buildDirRegex = /(Build).*/.compile();
-            const typesRegex = /.*(app|framework|xctest)$/.compile();
-            const pathRegex = /.*\//.compile();
             let outFiles = [];
             for (const profDataFile of profDataFiles) {
-                const buildDir = path_1.dirname(profDataFile).replace(buildDirRegex, '$1');
+                const buildDir = path_1.dirname(profDataFile).replace(/(Build).*/, '$1');
                 core.debug(`Checking contents of build dir ${buildDir} of prof data file ${profDataFile}`);
                 for await (const file of forEachFiles(buildDir)) {
+                    const typesRegex = /.*(app|framework|xctest)$/;
                     if (!typesRegex.test(file))
                         continue;
                     const type = file.replace(typesRegex, '$1');
                     const proj = file
-                        .replace(pathRegex, '')
+                        .replace(/.*\//, '')
                         .replace(`.${type}`, '');
                     const destStat = await fs_1.promises.stat(path.join(file, proj));
                     const dest = destStat.isFile() ? path.join(file, proj) : path.join(file, 'Contents', 'MacOS', proj);
