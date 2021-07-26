@@ -87,7 +87,7 @@ jobs:
           action: test
           enable-code-coverage: true
           parallel-testing-enabled: true
-          derived-data: .derived-data
+          derived-data-path: .derived-data
       - uses: sersoft-gmbh/xcode-coverage-action@main
         if: github.event_name == 'push'
         with:
