@@ -7,14 +7,16 @@ import * as path from "path";
 import * as os from "os";
 
 async function runCmd(cmd: string, args?: string[]): Promise<string> {
-    let stdOut = '';
-    await exec.exec(cmd, args, {
+    const output = await exec.getExecOutput(cmd, args, {
         failOnStdErr: true,
-        listeners: {
-            stdout: (data: Buffer) => stdOut += data.toString()
-        }
+        silent: true,
     });
-    return stdOut;
+    return output.stdout;
+}
+
+enum CovFormat {
+    txt = 'txt',
+    lcov = 'lcov'
 }
 
 declare type WalkEntry = {
@@ -44,15 +46,22 @@ async function fileExists(path: PathLike): Promise<boolean> {
 }
 
 async function main() {
-    if (process.platform !== "darwin") {
+    if (process.platform !== 'darwin') {
         throw new Error('This action only supports macOS!');
     }
 
     core.startGroup('Validating input');
-    const derivedData = core.getInput('derived-data', {required: true})
+    const derivedData = core.getInput('derived-data', { required: true })
         .replace(/(~|\$HOME|\${HOME})/g, os.homedir);
-    const outputFolder = core.getInput('output', {required: true})
+    const outputFolder = core.getInput('output', { required: true })
         .replace(/(~|\$HOME|\${HOME})/g, os.homedir);
+    const format = CovFormat[core.getInput('format', { required: true }) as keyof typeof CovFormat];
+    if (!format) {
+        throw new Error('Invalid format');
+    }
+    const _nameFilter = core.getInput('name-filter');
+    const nameFilter = _nameFilter ? new RegExp(_nameFilter) : null;
+    const failOnEmptyOutput = core.getBooleanInput('fail-on-empty-output');
     core.endGroup();
 
     await core.group('Setting up paths', async () => {
@@ -65,13 +74,14 @@ async function main() {
         for await (const entry of walk(derivedData, true)) {
             if (/.*\.profdata$/.test(entry.path)) {
                 profDataFiles.push(entry.path);
-                core.debug('Found profdata file: ' + entry.path);
+                core.debug(`Found profdata file: ${entry.path}`);
             }
         }
+        core.info(`Found ${profDataFiles.length} profiling data file(s)...`);
         return profDataFiles;
     });
 
-    let outFiles: string[];
+    let outFiles: string[] = [];
     if (profDataFiles.length > 0) {
         outFiles = await core.group('Converting files', async () => {
             let outFiles: string[] = [];
@@ -86,32 +96,49 @@ async function main() {
                     const proj = entry.path
                         .replace(/.*\//, '')
                         .replace(`.${type}`, '');
-                    core.debug('Project name: ' + proj);
+                    core.debug(`Project name: ${proj}`);
+                    if (nameFilter && !nameFilter.test(proj)) {
+                        core.debug(`Skipping ${proj} due to name filter...`);
+                        continue;
+                    }
 
                     let dest = path.join(entry.path, proj);
                     if (!await fileExists(dest)) {
                         dest = path.join(entry.path, 'Contents', 'MacOS', proj);
                     }
-                    const converted = await runCmd('xcrun', [
-                        'llvm-cov', 'show', '-instr-profile', profDataFile, dest,
-                    ]);
-                    const destName = proj.replace(/\s/g, '');
-                    const outFile = path.join(outputFolder, `${destName}.${type}.coverage.txt`);
-                    core.debug('Writing coverage report to ' + outFile);
+                    let args = ['llvm-cov'];
+                    let fileEnding: string;
+                    switch (format) {
+                        case CovFormat.txt:
+                            args.push('show');
+                            fileEnding = 'txt';
+                            break;
+                        case CovFormat.lcov:
+                            args.push('export', '-format="lcov"');
+                            fileEnding = 'lcov';
+                            break;
+                    }
+                    args.push('-instr-profile', profDataFile, dest)
+                    const converted = await runCmd('xcrun', args);
+                    const projFileName = proj.replace(/\s/g, '');
+                    const outFile = path.join(outputFolder, `${projFileName}.${type}.coverage.${fileEnding}`);
+                    core.debug(`Writing coverage report to ${outFile}`);
                     await fs.writeFile(outFile, converted);
                     outFiles.push(outFile);
                 }
             }
+            core.info(`Processed ${outFiles.length} file(s)...`);
             return outFiles;
         });
-    } else {
-        outFiles = [];
     }
     core.setOutput('files', JSON.stringify(outFiles));
+    if (failOnEmptyOutput) {
+        throw new Error('No coverage files found!');
+    }
 }
 
 try {
-    main().catch(error => core.setFailed(error.message))
+    main().catch(error => core.setFailed(error.message));
 } catch (error) {
     core.setFailed(error.message);
 }
