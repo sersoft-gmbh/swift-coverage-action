@@ -1,6 +1,6 @@
 # Xcode Coverage Conversion
 
-[![Deploy](https://github.com/sersoft-gmbh/xcode-coverage-action/actions/workflows/main-deploy.yml/badge.svg)](https://github.com/sersoft-gmbh/-coverage-action/actions/workflows/main-deploy.yml)
+[![Tests](https://github.com/sersoft-gmbh/xcode-coverage-action/actions/workflows/tests.yml/badge.svg)](https://github.com/sersoft-gmbh/-coverage-action/actions/workflows/tsts.yml)
 
 This action converts code coverage files from xcodebuild runs for processing with e.g. codecov.
 Note that this action does not run any test. Use `xcodebuild` or [xcodebuild-action](https://github.com/sersoft-gmbh/xcodebuild-action) for that.
@@ -17,6 +17,20 @@ Default: `$HOME/Library/Developer/Xcode/DerivedData`
 The path to the output folder. Note that this folder will be deleted / overwritten by this action.
 You should probably put it in `.gitignore`.<br/>
 Default: `./.xcodecov`
+
+### `format`
+
+The format to write the coverage files in. Can be 'txt' or 'lcov'.<br/>
+Default: `txt`
+
+### `name-filter`
+
+A regular expression that is used to filter coverage files by their target names.
+
+### `fail-on-empty-output`
+
+If `true`, the action fails if no coverage files were found (output is still set to an empty array).<br/>
+Default: `'false'`
 
 ## Outputs
 
