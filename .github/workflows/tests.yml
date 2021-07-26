@@ -86,15 +86,14 @@ jobs:
           enable-code-coverage: true
           parallel-testing-enabled: true
           derived-data: .derived-data
-      - id: determine-source
-        name: Determine Source
-        run: |
-          if [ ${{github.event_name}} = 'pull_request' ]; then
-            echo "::set-output name=action-src::./"
-          else
-            echo "::set-output name=action-src::sersoft-gmbh/xcode-coverage-action@main"
-          fi
-      - uses: ${{steps.determine-source.outputs.action-src}}
+      - uses: sersoft-gmbh/xcode-coverage-action@main
+        if: github.event_name == 'push'
+        with:
+          format: ${{matrix.cov-format}}
+          derived-data: .derived-data
+          name-filter: TestProject1.*
+      - uses: './'
+        if: github.event_name == 'pull_request'
         with:
           format: ${{matrix.cov-format}}
           derived-data: .derived-data
