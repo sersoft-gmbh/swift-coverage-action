@@ -7,6 +7,7 @@ import * as path from "path";
 import * as os from "os";
 
 async function runCmd(cmd: string, args?: string[]): Promise<string> {
+    core.debug('Executing `' + [cmd].concat(args ?? []).join(' ') + '`');
     const output = await exec.getExecOutput(cmd, args, {
         failOnStdErr: true,
         silent: true,
