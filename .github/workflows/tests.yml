@@ -46,7 +46,7 @@ jobs:
       - name: Generate action code
         if: github.event_name == 'pull_request'
         run: npm run deploy
-      - uses: sersoft-gmbh/xcodebuild-action@v1.5.0
+      - uses: sersoft-gmbh/xcodebuild-action@v1.6.0
         with:
           spm-package: __test__/TestProject
           scheme: TestProject-Package
@@ -80,25 +80,25 @@ jobs:
       - name: Generate action code
         if: github.event_name == 'pull_request'
         run: npm run deploy
-      - uses: sersoft-gmbh/xcodebuild-action@v1.5.0
+      - uses: sersoft-gmbh/xcodebuild-action@v1.6.0
         with:
           spm-package: __test__/TestProject
           scheme: TestProject-Package
           action: test
           enable-code-coverage: true
           parallel-testing-enabled: true
-          derived-data-path: ./.derived-data
+          derived-data-path: .derived-data
       - uses: sersoft-gmbh/xcode-coverage-action@main
         if: github.event_name == 'push'
         with:
           format: ${{matrix.cov-format}}
-          derived-data: ./.derived-data
+          derived-data: .derived-data
           name-filter: TestProject1.*
       - uses: './'
         if: github.event_name == 'pull_request'
         with:
           format: ${{matrix.cov-format}}
-          derived-data: ./.derived-data
+          derived-data: .derived-data
           name-filter: TestProject1.*
       - name: Check for produced coverage files
         run: | # check that the directory exists and contains files
