@@ -115,7 +115,7 @@ async function main() {
                             fileEnding = 'txt';
                             break;
                         case CovFormat.lcov:
-                            args.push('export', '-format="lcov"');
+                            args.push('export', '-format=lcov');
                             fileEnding = 'lcov';
                             break;
                     }
