@@ -34,15 +34,17 @@ const path_1 = __nccwpck_require__(622);
 const path = __importStar(__nccwpck_require__(622));
 const os = __importStar(__nccwpck_require__(87));
 async function runCmd(cmd, args) {
-    let stdOut = '';
-    await exec.exec(cmd, args, {
+    const output = await exec.getExecOutput(cmd, args, {
         failOnStdErr: true,
-        listeners: {
-            stdout: (data) => stdOut += data.toString()
-        }
+        silent: !core.isDebug(),
     });
-    return stdOut;
+    return output.stdout;
 }
+var CovFormat;
+(function (CovFormat) {
+    CovFormat["txt"] = "txt";
+    CovFormat["lcov"] = "lcov";
+})(CovFormat || (CovFormat = {}));
 // Taken and adjusted from https://stackoverflow.com/a/65415138/1388842
 async function* walk(dir, onlyFiles = true) {
     const entries = await fs_1.promises.readdir(dir, { withFileTypes: true });
@@ -65,14 +67,22 @@ async function fileExists(path) {
     return stat.isFile();
 }
 async function main() {
-    if (process.platform !== "darwin") {
+    if (process.platform !== 'darwin') {
         throw new Error('This action only supports macOS!');
     }
     core.startGroup('Validating input');
-    const derivedData = core.getInput('derived-data', { required: true })
-        .replace(/(~|\$HOME|\${HOME})/g, os.homedir);
-    const outputFolder = core.getInput('output', { required: true })
-        .replace(/(~|\$HOME|\${HOME})/g, os.homedir);
+    const derivedData = path.resolve(core.getInput('derived-data', { required: true })
+        .replace(/(~|\$HOME|\${HOME})/g, os.homedir));
+    const outputFolder = path.resolve(core.getInput('output', { required: true })
+        .replace(/(~|\$HOME|\${HOME})/g, os.homedir));
+    const format = CovFormat[core.getInput('format', { required: true })];
+    if (!format) {
+        throw new Error('Invalid format');
+    }
+    const _targetNameFilter = core.getInput('target-name-filter');
+    const targetNameFilter = _targetNameFilter ? new RegExp(_targetNameFilter) : null;
+    const ignoreConversionFailures = core.getBooleanInput('ignore-conversion-failures');
+    const failOnEmptyOutput = core.getBooleanInput('fail-on-empty-output');
     core.endGroup();
     await core.group('Setting up paths', async () => {
         await io.rmRF(outputFolder);
@@ -83,15 +93,17 @@ async function main() {
         for await (const entry of walk(derivedData, true)) {
             if (/.*\.profdata$/.test(entry.path)) {
                 profDataFiles.push(entry.path);
-                core.debug('Found profdata file: ' + entry.path);
+                core.debug(`Found profdata file: ${entry.path}`);
             }
         }
+        core.info(`Found ${profDataFiles.length} profiling data file(s)...`);
         return profDataFiles;
     });
-    let outFiles;
+    let convertedFiles = [];
     if (profDataFiles.length > 0) {
-        outFiles = await core.group('Converting files', async () => {
+        convertedFiles = await core.group('Converting files', async () => {
             let outFiles = [];
+            let conversionFailures = [];
             for (const profDataFile of profDataFiles) {
                 const buildDir = path_1.dirname(profDataFile).replace(/(Build).*/, '$1');
                 core.debug(`Checking contents of build dir ${buildDir} of prof data file ${profDataFile}`);
@@ -104,28 +116,66 @@ async function main() {
                     const proj = entry.path
                         .replace(/.*\//, '')
                         .replace(`.${type}`, '');
-                    core.debug('Project name: ' + proj);
+                    core.debug(`Project name: ${proj}`);
+                    if (targetNameFilter && !targetNameFilter.test(proj)) {
+                        core.info(`Skipping ${proj} due to target name filter...`);
+                        continue;
+                    }
                     let dest = path.join(entry.path, proj);
                     if (!await fileExists(dest)) {
                         dest = path.join(entry.path, 'Contents', 'MacOS', proj);
                     }
-                    const converted = await runCmd('xcrun', [
-                        'llvm-cov', 'show', '-instr-profile', profDataFile, dest,
-                    ]);
-                    const destName = proj.replace(/\s/g, '');
-                    const outFile = path.join(outputFolder, `${destName}.${type}.coverage.txt`);
-                    core.debug('Writing coverage report to ' + outFile);
+                    let args = ['llvm-cov'];
+                    let fileEnding;
+                    switch (format) {
+                        case CovFormat.txt:
+                            args.push('show');
+                            fileEnding = 'txt';
+                            break;
+                        case CovFormat.lcov:
+                            args.push('export', '-format=lcov');
+                            fileEnding = 'lcov';
+                            break;
+                    }
+                    args.push('-instr-profile', profDataFile, dest);
+                    let converted;
+                    try {
+                        converted = await runCmd('xcrun', args);
+                    }
+                    catch (error) {
+                        conversionFailures.push(error);
+                        const msg = `Failed to convert ${dest}: ${error}`;
+                        if (ignoreConversionFailures) {
+                            core.info(msg);
+                        }
+                        else {
+                            core.error(msg);
+                        }
+                        continue;
+                    }
+                    const projFileName = proj.replace(/\s/g, '');
+                    const outFile = path.join(outputFolder, `${projFileName}.${type}.coverage.${fileEnding}`);
+                    core.debug(`Writing coverage report to ${outFile}`);
                     await fs_1.promises.writeFile(outFile, converted);
                     outFiles.push(outFile);
                 }
             }
+            if (conversionFailures.length > 0) {
+                if (ignoreConversionFailures) {
+                    core.info(`Failed to convert ${conversionFailures.length} file(s)...`);
+                }
+                else {
+                    throw new Error('Conversion failures:\n' + conversionFailures.map(e => e.toString()).join('\n'));
+                }
+            }
+            core.info(`Processed ${outFiles.length} file(s)...`);
             return outFiles;
         });
     }
-    else {
-        outFiles = [];
+    core.setOutput('files', JSON.stringify(convertedFiles));
+    if (convertedFiles.length <= 0 && failOnEmptyOutput) {
+        throw new Error('No coverage files found (or none succeeded to convert)!');
     }
-    core.setOutput('files', JSON.stringify(outFiles));
 }
 try {
     main().catch(error => core.setFailed(error.message));
