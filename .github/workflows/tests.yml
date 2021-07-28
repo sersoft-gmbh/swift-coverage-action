@@ -100,6 +100,7 @@ jobs:
         with:
           format: ${{matrix.cov-format}}
           derived-data: ${{env.INPUT_DERIVED_DATA}}
+          output: ${{env.INPUT_OUTPUT_FOLDER}}
           target-name-filter: ${{env.INPUT_TARGET_NAME_FILTER}}
       - uses: './'
         if: github.event_name == 'pull_request'
