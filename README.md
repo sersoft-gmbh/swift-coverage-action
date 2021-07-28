@@ -23,7 +23,7 @@ Default: `./.xcodecov`
 The format to write the coverage files in. Can be 'txt' or 'lcov'.<br/>
 Default: `txt`
 
-### `name-filter`
+### `target-name-filter`
 
 A regular expression that is used to filter coverage files by their target names.
 
