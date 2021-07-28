@@ -36,7 +36,7 @@ jobs:
         with:
           xcode-version: ^12.4
       - uses: actions/checkout@v2
-      - uses: sersoft-gmbh/xcodebuild-action@v1.5.0
+      - uses: sersoft-gmbh/xcodebuild-action@v1.6
         with:
           spm-package: __test__/TestProject
           scheme: TestProject-Package
