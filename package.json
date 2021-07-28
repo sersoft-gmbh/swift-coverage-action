@@ -13,8 +13,10 @@
     "url": "git+https://github.com/sersoft-gmbh/xcode-coverage-action.git"
   },
   "keywords": [
-    "Swift",
-    "Jazzy"
+    "Xcode",
+    "LLVM",
+    "Coverage",
+    "Codecov"
   ],
   "author": "ser.soft GmbH",
   "license": "Apache-2.0",
