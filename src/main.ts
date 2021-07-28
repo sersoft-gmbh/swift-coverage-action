@@ -61,6 +61,7 @@ async function main() {
     }
     const _targetNameFilter = core.getInput('target-name-filter');
     const targetNameFilter = _targetNameFilter ? new RegExp(_targetNameFilter) : null;
+    const ignoreConversionFailures = core.getBooleanInput('ignore-conversion-failures');
     const failOnEmptyOutput = core.getBooleanInput('fail-on-empty-output');
     core.endGroup();
 
@@ -85,6 +86,7 @@ async function main() {
     if (profDataFiles.length > 0) {
         convertedFiles = await core.group('Converting files', async () => {
             let outFiles: string[] = [];
+            let conversionFailures: Error[] = [];
             for (const profDataFile of profDataFiles) {
                 const buildDir = dirname(profDataFile).replace(/(Build).*/, '$1');
                 core.debug(`Checking contents of build dir ${buildDir} of prof data file ${profDataFile}`);
@@ -119,7 +121,19 @@ async function main() {
                             break;
                     }
                     args.push('-instr-profile', profDataFile, dest)
-                    const converted = await runCmd('xcrun', args);
+                    let converted: string;
+                    try {
+                        converted = await runCmd('xcrun', args);
+                    } catch (error) {
+                        conversionFailures.push(error);
+                        const msg = `Failed to convert ${dest}: ${error}`
+                        if (ignoreConversionFailures) {
+                            core.info(msg);
+                        } else {
+                            core.error(msg);
+                        }
+                        continue;
+                    }
                     const projFileName = proj.replace(/\s/g, '');
                     const outFile = path.join(outputFolder, `${projFileName}.${type}.coverage.${fileEnding}`);
                     core.debug(`Writing coverage report to ${outFile}`);
@@ -127,13 +141,20 @@ async function main() {
                     outFiles.push(outFile);
                 }
             }
+            if (conversionFailures.length > 0) {
+                if (ignoreConversionFailures) {
+                    core.info(`Failed to convert ${conversionFailures.length} file(s)...`);
+                } else {
+                    throw new Error('Conversion failures:\n' + conversionFailures.map(e => e.toString()).join('\n'));
+                }
+            }
             core.info(`Processed ${outFiles.length} file(s)...`);
             return outFiles;
         });
     }
     core.setOutput('files', JSON.stringify(convertedFiles));
-    if (failOnEmptyOutput) {
-        throw new Error('No coverage files found!');
+    if (convertedFiles.length <= 0 && failOnEmptyOutput) {
+        throw new Error('No coverage files found (or none succeeded to convert)!');
     }
 }
 

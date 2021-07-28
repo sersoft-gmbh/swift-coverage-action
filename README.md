@@ -27,6 +27,11 @@ Default: `txt`
 
 A regular expression that is used to filter coverage files by their target names.
 
+### `ignore-conversion-failures`
+
+If `true`, conversion failures are ignored. If `fail-on-empty-output` is also set to `true`, the action might still fail if all conversions fail.<br/>
+Default: `'false'`
+
 ### `fail-on-empty-output`
 
 If `true`, the action fails if no coverage files were found (output is still set to an empty array).<br/>
@@ -36,7 +41,7 @@ Default: `'false'`
 
 ### `files`
 
-The JSON encoded array of file-paths that were written. They are all contained inside the directory specified in the `output` input.
+The JSON encoded array of (absolute) file paths that were written. They are all contained inside the directory specified in the `output` input.
 
 ## Example Usage
 
