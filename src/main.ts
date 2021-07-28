@@ -51,10 +51,10 @@ async function main() {
     }
 
     core.startGroup('Validating input');
-    const derivedData = core.getInput('derived-data', { required: true })
-        .replace(/(~|\$HOME|\${HOME})/g, os.homedir);
-    const outputFolder = core.getInput('output', { required: true })
-        .replace(/(~|\$HOME|\${HOME})/g, os.homedir);
+    const derivedData = path.resolve(core.getInput('derived-data', { required: true })
+        .replace(/(~|\$HOME|\${HOME})/g, os.homedir));
+    const outputFolder = path.resolve(core.getInput('output', { required: true })
+        .replace(/(~|\$HOME|\${HOME})/g, os.homedir));
     const format = CovFormat[core.getInput('format', { required: true }) as keyof typeof CovFormat];
     if (!format) {
         throw new Error('Invalid format');
