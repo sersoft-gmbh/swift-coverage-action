@@ -7,10 +7,9 @@ import * as path from "path";
 import * as os from "os";
 
 async function runCmd(cmd: string, args?: string[]): Promise<string> {
-    core.debug('Executing `' + [cmd].concat(args ?? []).join(' ') + '`');
     const output = await exec.getExecOutput(cmd, args, {
         failOnStdErr: true,
-        silent: true,
+        silent: !core.isDebug(),
     });
     return output.stdout;
 }
@@ -60,8 +59,8 @@ async function main() {
     if (!format) {
         throw new Error('Invalid format');
     }
-    const _nameFilter = core.getInput('name-filter');
-    const nameFilter = _nameFilter ? new RegExp(_nameFilter) : null;
+    const _targetNameFilter = core.getInput('target-name-filter');
+    const targetNameFilter = _targetNameFilter ? new RegExp(_targetNameFilter) : null;
     const failOnEmptyOutput = core.getBooleanInput('fail-on-empty-output');
     core.endGroup();
 
@@ -82,9 +81,9 @@ async function main() {
         return profDataFiles;
     });
 
-    let outFiles: string[] = [];
+    let convertedFiles: string[] = [];
     if (profDataFiles.length > 0) {
-        outFiles = await core.group('Converting files', async () => {
+        convertedFiles = await core.group('Converting files', async () => {
             let outFiles: string[] = [];
             for (const profDataFile of profDataFiles) {
                 const buildDir = dirname(profDataFile).replace(/(Build).*/, '$1');
@@ -98,8 +97,8 @@ async function main() {
                         .replace(/.*\//, '')
                         .replace(`.${type}`, '');
                     core.debug(`Project name: ${proj}`);
-                    if (nameFilter && !nameFilter.test(proj)) {
-                        core.debug(`Skipping ${proj} due to name filter...`);
+                    if (targetNameFilter && !targetNameFilter.test(proj)) {
+                        core.info(`Skipping ${proj} due to target name filter...`);
                         continue;
                     }
 
@@ -132,7 +131,7 @@ async function main() {
             return outFiles;
         });
     }
-    core.setOutput('files', JSON.stringify(outFiles));
+    core.setOutput('files', JSON.stringify(convertedFiles));
     if (failOnEmptyOutput) {
         throw new Error('No coverage files found!');
     }
