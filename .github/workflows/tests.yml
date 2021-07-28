@@ -93,13 +93,13 @@ jobs:
         with:
           format: ${{matrix.cov-format}}
           derived-data: .derived-data
-          name-filter: TestProject1.*
+          target-name-filter: TestProject1.*
       - uses: './'
         if: github.event_name == 'pull_request'
         with:
           format: ${{matrix.cov-format}}
           derived-data: .derived-data
-          name-filter: TestProject1.*
+          target-name-filter: TestProject1.*
       - name: Check for produced coverage files
         run: | # check that the directory exists and contains files
           test -d .xcodecov && \
