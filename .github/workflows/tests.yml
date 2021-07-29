@@ -92,7 +92,7 @@ jobs:
       INPUT_SEARCH_PATHS: |
         __test__/TestProject/.build
         .derived-data
-      INPUT_TARGET_NAME_FILTER: TestProject1.*
+      INPUT_TARGET_NAME_FILTER: TestProject(1|Package).*
       INPUT_OUTPUT_FOLDER: .swiftcov-test
     runs-on: ${{matrix.os}}
     steps:
@@ -140,6 +140,15 @@ jobs:
           target-name-filter: ${{env.INPUT_TARGET_NAME_FILTER}}
       - name: Check for produced coverage files
         run: | # check that the directory exists and contains files
-          test -d '${{env.INPUT_OUTPUT_FOLDER}}' && \
-          test "$(find '${{env.INPUT_OUTPUT_FOLDER}}' -name 'TestProject1*.${{matrix.cov-format}}')" != '' && \
+          test -d '${{env.INPUT_OUTPUT_FOLDER}}' && { \
+            { \
+              test '${{runner.os}}' == 'macOS' && \
+              test "$(find '${{env.INPUT_OUTPUT_FOLDER}}' -name 'TestProject1*.${{matrix.cov-format}}')" != ''; \
+            } \
+            || \
+            { \
+              test '${{runner.os}}' == 'Linux' && \
+              test "$(find '${{env.INPUT_OUTPUT_FOLDER}}' -name 'TestProjectPackage*.${{matrix.cov-format}}')" != ''; \
+            }; \
+          } && \
           test "$(find '${{env.INPUT_OUTPUT_FOLDER}}' -name 'TestProject2*.${{matrix.cov-format}}')" == ''
