@@ -67,6 +67,9 @@ jobs:
           action: test
           enable-code-coverage: true
           parallel-testing-enabled: true
+      - run: swift test --parallel --enable-code-coverage
+        working-directory: __test__/TestProject
+      - run: ln -s __test__/TestProject/.build .build
       - uses: sersoft-gmbh/swift-coverage-action@main
         if: github.event_name == 'push'
       - uses: './'
@@ -87,7 +90,7 @@ jobs:
     env:
       INPUT_DERIVED_DATA: .derived-data
       INPUT_SEARCH_PATHS: |
-        .build
+        __test__/TestProject/.build
         .derived-data
       INPUT_TARGET_NAME_FILTER: TestProject1.*
       INPUT_OUTPUT_FOLDER: .swiftcov-test
@@ -111,6 +114,7 @@ jobs:
         if: github.event_name == 'pull_request'
         run: npm run deploy
       - uses: sersoft-gmbh/xcodebuild-action@v1.6.0
+        if: runner.os == 'macOS'
         with:
           spm-package: __test__/TestProject
           scheme: TestProject-Package
@@ -118,6 +122,7 @@ jobs:
           enable-code-coverage: true
           parallel-testing-enabled: true
           derived-data-path: ${{env.INPUT_DERIVED_DATA}}
+      - run: swift test --parallel --enable-code-coverage
       - uses: sersoft-gmbh/swift-coverage-action@main
         if: github.event_name == 'push'
         with:
