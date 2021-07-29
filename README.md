@@ -9,8 +9,12 @@ Note that this action does not run any test. Use `swift test`, `xcodebuild` or [
 
 ### `search-paths`
 
-The path to Xcode's Derived Data folder.<br/>
-Default: `$HOME/Library/Developer/Xcode/DerivedData`
+A list of search paths (one per line) that should be used for searching coverage data.<br/>
+Default: 
+```
+./.build
+$HOME/Library/Developer/Xcode/DerivedData
+```
 
 ### `output`
 
