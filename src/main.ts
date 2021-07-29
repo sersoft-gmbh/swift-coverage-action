@@ -102,7 +102,14 @@ async function main() {
             let outFiles: string[] = [];
             let conversionFailures: Error[] = [];
             for (const profDataFile of profDataFiles) {
-                const buildDir = dirname(profDataFile).replace(/(Build).*/, '$1');
+                const profDataDir = dirname(profDataFile);
+                const xcodeRegex = /(Build).*/;
+                let buildDir: string;
+                if (xcodeRegex.test(profDataDir)) {
+                    buildDir = profDataDir.replace(xcodeRegex, '$1');
+                } else {
+                    buildDir = dirname(profDataDir);
+                }
                 core.debug(`Checking contents of build dir ${buildDir} of prof data file ${profDataFile}`);
                 for await (const entry of walk(buildDir, false)) {
                     const typesRegex = /.*\.(app|framework|xctest)$/;
