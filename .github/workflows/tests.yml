@@ -123,6 +123,7 @@ jobs:
           parallel-testing-enabled: true
           derived-data-path: ${{env.INPUT_DERIVED_DATA}}
       - run: swift test --parallel --enable-code-coverage
+        working-directory: __test__/TestProject
       - uses: sersoft-gmbh/swift-coverage-action@main
         if: github.event_name == 'push'
         with:
