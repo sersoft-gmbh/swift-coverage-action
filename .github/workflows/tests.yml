@@ -86,6 +86,9 @@ jobs:
         cov-format: [ 'txt', 'lcov' ]
     env:
       INPUT_DERIVED_DATA: .derived-data
+      INPUT_SEARCH_PATHS: |
+        .build
+        .derived-data
       INPUT_TARGET_NAME_FILTER: TestProject1.*
       INPUT_OUTPUT_FOLDER: .swiftcov-test
     runs-on: ${{matrix.os}}
@@ -119,14 +122,14 @@ jobs:
         if: github.event_name == 'push'
         with:
           format: ${{matrix.cov-format}}
-          derived-data: ${{env.INPUT_DERIVED_DATA}}
+          search-paths: ${{env.INPUT_SEARCH_PATHS}}
           output: ${{env.INPUT_OUTPUT_FOLDER}}
           target-name-filter: ${{env.INPUT_TARGET_NAME_FILTER}}
       - uses: './'
         if: github.event_name == 'pull_request'
         with:
           format: ${{matrix.cov-format}}
-          derived-data: ${{env.INPUT_DERIVED_DATA}}
+          search-paths: ${{env.INPUT_SEARCH_PATHS}}
           output: ${{env.INPUT_OUTPUT_FOLDER}}
           target-name-filter: ${{env.INPUT_TARGET_NAME_FILTER}}
       - name: Check for produced coverage files

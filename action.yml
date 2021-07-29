@@ -6,8 +6,8 @@ inputs:
     description: A list of search paths (one per line) that should be used for searching coverage data.
     required: true
     default: |
-      './.build'
-      '$HOME/Library/Developer/Xcode/DerivedData'
+      ./.build
+      $HOME/Library/Developer/Xcode/DerivedData
   output:
     description: The path to the output folder to put the converted coverage files in.
     required: true
