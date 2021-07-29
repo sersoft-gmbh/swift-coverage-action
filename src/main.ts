@@ -125,16 +125,18 @@ async function main() {
                         continue;
                     }
 
-                    let dest = path.join(entry.path, proj);
-                    if (!await fileExists(dest)) {
-                        dest = path.join(entry.path, 'Contents', 'MacOS', proj);
-                    }
+                    let dest: string;
                     let cmd: string;
                     let args: string[];
                     if (process.platform === 'darwin') {
+                        dest = path.join(entry.path, proj);
+                        if (!await fileExists(dest)) {
+                            dest = path.join(entry.path, 'Contents', 'MacOS', proj);
+                        }
                         cmd = 'xcrun';
                         args = ['llvm-cov'];
                     } else {
+                        dest = entry.path;
                         cmd = 'llvm-cov';
                         args = [];
                     }
