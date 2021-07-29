@@ -1,7 +1,7 @@
 {
-  "name": "xcode-coverage-action",
+  "name": "swift-coverage-action",
   "version": "1.0.0",
-  "description": "A GitHub action that converts Xcode code coverage files.",
+  "description": "A GitHub action that converts Swift / Xcode code coverage files.",
   "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -10,9 +10,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sersoft-gmbh/xcode-coverage-action.git"
+    "url": "git+https://github.com/sersoft-gmbh/swift-coverage-action.git"
   },
   "keywords": [
+    "Swift",
     "Xcode",
     "LLVM",
     "Coverage",
@@ -21,9 +22,9 @@
   "author": "ser.soft GmbH",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/sersoft-gmbh/xcode-coverage-action/issues"
+    "url": "https://github.com/sersoft-gmbh/swift-coverage-action/issues"
   },
-  "homepage": "https://github.com/sersoft-gmbh/xcode-coverage-action#readme",
+  "homepage": "https://github.com/sersoft-gmbh/swift-coverage-action#readme",
   "dependencies": {
     "@actions/core": "^1.4.0",
     "@actions/exec": "^1.1.0",

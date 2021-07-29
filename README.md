@@ -1,13 +1,13 @@
-# Xcode Coverage Conversion
+# Swift Coverage Conversion
 
-[![Tests](https://github.com/sersoft-gmbh/xcode-coverage-action/actions/workflows/tests.yml/badge.svg)](https://github.com/sersoft-gmbh/-coverage-action/actions/workflows/tsts.yml)
+[![Tests](https://github.com/sersoft-gmbh/swift-coverage-action/actions/workflows/tests.yml/badge.svg)](https://github.com/sersoft-gmbh/swift-coverage-action/actions/workflows/tests.yml)
 
-This action converts code coverage files from xcodebuild runs for processing with e.g. codecov.
-Note that this action does not run any test. Use `xcodebuild` or [xcodebuild-action](https://github.com/sersoft-gmbh/xcodebuild-action) for that.
+This action converts code coverage files from `swift test` or `xcodebuild` runs for processing with e.g. codecov.
+Note that this action does not run any test. Use `swift test`, `xcodebuild` or [xcodebuild-action](https://github.com/sersoft-gmbh/xcodebuild-action) for that.
 
 ## Inputs
 
-### `derived-data`
+### `search-paths`
 
 The path to Xcode's Derived Data folder.<br/>
 Default: `$HOME/Library/Developer/Xcode/DerivedData`
@@ -16,7 +16,7 @@ Default: `$HOME/Library/Developer/Xcode/DerivedData`
 
 The path to the output folder. Note that this folder will be deleted / overwritten by this action.
 You should probably put it in `.gitignore`.<br/>
-Default: `./.xcodecov`
+Default: `./.swiftcov`
 
 ### `format`
 
@@ -45,7 +45,7 @@ The JSON encoded array of (absolute) file paths that were written. They are all 
 
 ## Example Usage
 
-Use the following snippet after running tests with Xcode and coverage to convert those coverage files:
+Use the following snippet after running tests with Swift or Xcode to convert those coverage files:
 ```yaml
-uses: sersoft-gmbh/xcode-coverage-action@v1
+uses: sersoft-gmbh/swift-coverage-action@v2
 ```

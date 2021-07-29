@@ -1,7 +1,7 @@
 import * as core from '@actions/core';
 import * as exec from '@actions/exec';
 import * as io from '@actions/io';
-import {promises as fs, existsSync as exists, PathLike} from 'fs';
+import { promises as fs, existsSync as exists, PathLike } from 'fs';
 import { resolve, dirname } from 'path';
 import * as path from "path";
 import * as os from "os";
@@ -39,6 +39,12 @@ async function* walk(dir: string, onlyFiles: boolean = true): AsyncGenerator<Wal
     }
 }
 
+async function directoryExists(path: PathLike): Promise<boolean> {
+    if (!exists(path)) return false;
+    const stat = await fs.stat(path);
+    return stat.isDirectory();
+}
+
 async function fileExists(path: PathLike): Promise<boolean> {
     if (!exists(path)) return false;
     const stat = await fs.stat(path);
@@ -46,13 +52,15 @@ async function fileExists(path: PathLike): Promise<boolean> {
 }
 
 async function main() {
-    if (process.platform !== 'darwin') {
-        throw new Error('This action only supports macOS!');
+    switch (process.platform) {
+        case 'darwin': break;
+        case 'linux': break;
+        default: throw new Error('This action only supports macOS and Linux!');
     }
 
     core.startGroup('Validating input');
-    const derivedData = path.resolve(core.getInput('derived-data', { required: true })
-        .replace(/(~|\$HOME|\${HOME})/g, os.homedir));
+    const searchPaths = core.getMultilineInput('search-paths', { required: true })
+            .map(p => path.resolve(p.replace(/(~|\$HOME|\${HOME})/g, os.homedir)));
     const outputFolder = path.resolve(core.getInput('output', { required: true })
         .replace(/(~|\$HOME|\${HOME})/g, os.homedir));
     const format = CovFormat[core.getInput('format', { required: true }) as keyof typeof CovFormat];
@@ -72,10 +80,16 @@ async function main() {
 
     const profDataFiles = await core.group('Finding coverage files', async () => {
         let profDataFiles: string[] = [];
-        for await (const entry of walk(derivedData, true)) {
-            if (/.*\.profdata$/.test(entry.path)) {
-                profDataFiles.push(entry.path);
-                core.debug(`Found profdata file: ${entry.path}`);
+        for (const searchPath of searchPaths) {
+            if (!await directoryExists(searchPath)) {
+                core.info(`Skipping non-existent search path ${searchPath}...`);
+                continue;
+            }
+            for await (const entry of walk(searchPath, true)) {
+                if (/.*\.profdata$/.test(entry.path)) {
+                    profDataFiles.push(entry.path);
+                    core.debug(`Found profdata file: ${entry.path}`);
+                }
             }
         }
         core.info(`Found ${profDataFiles.length} profiling data file(s)...`);
@@ -108,7 +122,15 @@ async function main() {
                     if (!await fileExists(dest)) {
                         dest = path.join(entry.path, 'Contents', 'MacOS', proj);
                     }
-                    let args = ['llvm-cov'];
+                    let cmd: string;
+                    let args: string[];
+                    if (process.platform === 'darwin') {
+                        cmd = 'xcrun';
+                        args = ['llvm-cov'];
+                    } else {
+                        cmd = 'llvm-cov';
+                        args = [];
+                    }
                     let fileEnding: string;
                     switch (format) {
                         case CovFormat.txt:
@@ -123,7 +145,7 @@ async function main() {
                     args.push('-instr-profile', profDataFile, dest)
                     let converted: string;
                     try {
-                        converted = await runCmd('xcrun', args);
+                        converted = await runCmd(cmd, args);
                     } catch (error) {
                         conversionFailures.push(error);
                         const msg = `Failed to convert ${dest}: ${error}`
