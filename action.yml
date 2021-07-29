@@ -1,15 +1,17 @@
-name: Xcode Coverage Conversion
-description: Converts Xcode code coverage files for processing with e.g. codecov.
+name: Swift Coverage Conversion
+description: Converts Swift / Xcode code coverage files for processing with e.g. codecov.
 author: ser.soft GmbH
 inputs:
-  derived-data:
-    description: The path to Xcode's Derived Data folder.
+  search-paths:
+    description: A list of search paths (one per line) that should be used for searching coverage data.
     required: true
-    default: '$HOME/Library/Developer/Xcode/DerivedData'
+    default: |
+      './.build'
+      '$HOME/Library/Developer/Xcode/DerivedData'
   output:
     description: The path to the output folder to put the converted coverage files in.
     required: true
-    default: './.xcodecov'
+    default: './.swiftcov'
   format:
     description: The format to write the coverage files in. Can be 'txt' or 'lcov'.
     required: true
