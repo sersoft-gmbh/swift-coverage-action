@@ -8,9 +8,11 @@ import * as os from "os";
 
 async function runCmd(cmd: string, args?: string[]): Promise<string> {
     const output = await exec.getExecOutput(cmd, args, {
-        failOnStdErr: true,
         silent: !core.isDebug(),
     });
+    if (output.stderr.length > 0) {
+        core.warning(`Command execution wrote lines to stderr:\n${output.stderr}`);
+    }
     return output.stdout;
 }
 
@@ -131,7 +133,16 @@ async function main() {
                     if (process.platform === 'darwin') {
                         dest = path.join(entry.path, proj);
                         if (!await fileExists(dest)) {
-                            dest = path.join(entry.path, 'Contents', 'MacOS', proj);
+                            const macOSPath = path.join(entry.path, 'Contents', 'MacOS');
+                            dest = path.join(macOSPath, proj);
+                            if (!await fileExists(dest)) {
+                                // Try again with whitespaces removed.
+                                dest = path.join(macOSPath, proj.replace(' ', ''));
+                            }
+                            if (!await fileExists(dest)) {
+                                core.warning(`Couldn't find a suitable target file in ${entry.path}. Using the path itself now...`);
+                                dest = entry.path;
+                            }
                         }
                         cmd = 'xcrun';
                         args = ['llvm-cov'];
