@@ -143,8 +143,8 @@ async function main() {
                         .replace(/.*\//, '')
                         .replace(`.${type}`, '');
                     core.debug(`Project name: ${proj}`);
-                    if (processedTargets.has(proj)) {
-                        core.info(`Skipping ${proj} because it has already been converted...`);
+                    if (processedTargets.has(`${proj}.${type}`)) {
+                        core.info(`Skipping ${proj} with type ${type} because it has already been converted...`);
                         continue;
                     }
                     if (targetNameFilter && !targetNameFilter.test(proj)) {
@@ -208,7 +208,7 @@ async function main() {
                     core.debug(`Writing coverage report to ${outFile}`);
                     await fs_1.promises.writeFile(outFile, converted);
                     outFiles.push(outFile);
-                    processedTargets.add(proj);
+                    processedTargets.add(`${proj}.${type}`);
                 }
             }
             if (conversionFailures.length > 0) {
