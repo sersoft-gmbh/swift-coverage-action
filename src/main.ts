@@ -174,9 +174,12 @@ async function main() {
                     let converted: string;
                     try {
                         converted = await runCmd(cmd, args);
-                    } catch (error) {
-                        conversionFailures.push(error);
-                        const msg = `Failed to convert ${dest}: ${error}`
+                    } catch (error: any) {
+                        const msg = `Failed to convert ${dest}: ${error}`;
+                        if (error instanceof Error)
+                            conversionFailures.push(error);
+                        else
+                            conversionFailures.push(new Error(msg));
                         if (ignoreConversionFailures) {
                             core.info(msg);
                         } else {
