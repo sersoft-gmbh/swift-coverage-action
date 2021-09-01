@@ -63,13 +63,13 @@ async function* walk(dir, onlyFiles = true) {
     }
 }
 async function directoryExists(path) {
-    if (!fs_1.existsSync(path))
+    if (!(0, fs_1.existsSync)(path))
         return false;
     const stat = await fs_1.promises.stat(path);
     return stat.isDirectory();
 }
 async function fileExists(path) {
-    if (!fs_1.existsSync(path))
+    if (!(0, fs_1.existsSync)(path))
         return false;
     const stat = await fs_1.promises.stat(path);
     return stat.isFile();
@@ -193,8 +193,11 @@ async function main() {
                         converted = await runCmd(cmd, args);
                     }
                     catch (error) {
-                        conversionFailures.push(error);
                         const msg = `Failed to convert ${dest}: ${error}`;
+                        if (error instanceof Error)
+                            conversionFailures.push(error);
+                        else
+                            conversionFailures.push(new Error(msg));
                         if (ignoreConversionFailures) {
                             core.info(msg);
                         }
