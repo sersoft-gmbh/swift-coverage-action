@@ -42,7 +42,7 @@ jobs:
         cov-format: [ 'txt', 'lcov' ]
     runs-on: ${{matrix.os}}
     steps:
-      - uses: maxim-lobanov/setup-xcode@v1.3.0
+      - uses: maxim-lobanov/setup-xcode@v1.4.0
         if: runner.os == 'macOS'
         with:
           xcode-version: ^12.4
@@ -96,7 +96,7 @@ jobs:
       INPUT_OUTPUT_FOLDER: .swiftcov-test
     runs-on: ${{matrix.os}}
     steps:
-      - uses: maxim-lobanov/setup-xcode@v1.3.0
+      - uses: maxim-lobanov/setup-xcode@v1.4.0
         if: runner.os == 'macOS'
         with:
           xcode-version: ^12.4
