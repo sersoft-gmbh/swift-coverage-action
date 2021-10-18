@@ -53,3 +53,14 @@ Use the following snippet after running tests with Swift or Xcode to convert tho
 ```yaml
 uses: sersoft-gmbh/swift-coverage-action@v2
 ```
+
+### Codecov Action v2
+
+To use this action together with [codecov/codecov-action@v2](https://github.com/codecov/codecov-action), you need to convert the output to a comma separated string:
+```yaml
+- uses: sersoft-gmbh/swift-coverage-action@v2
+  id: coverage-files
+- uses: codecov/codecov-action@v2
+  with:
+    files: ${{join(fromJSON(steps.coverage-files.outputs.files), ',')}}
+```
