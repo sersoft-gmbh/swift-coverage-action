@@ -63,6 +63,7 @@ jobs:
         with:
           spm-package: __test__/TestProject
           scheme: TestProject-Package
+          destination: platform=macOS
           action: test
           enable-code-coverage: true
           parallel-testing-enabled: true
@@ -117,6 +118,7 @@ jobs:
         with:
           spm-package: __test__/TestProject
           scheme: TestProject-Package
+          destination: platform=macOS
           action: test
           enable-code-coverage: true
           parallel-testing-enabled: true

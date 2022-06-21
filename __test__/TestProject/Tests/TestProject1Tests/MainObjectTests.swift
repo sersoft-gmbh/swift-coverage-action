@@ -2,8 +2,8 @@ import XCTest
 @testable import TestProject1
 
 final class MainObjectTests: XCTestCase {
-    struct Stream: TextOutputStream {
-        private var _string: String = ""
+    private struct Stream: TextOutputStream {
+        private var _string = ""
 
         mutating func write(_ string: String) {
             _string += string
