@@ -15,7 +15,7 @@ inputs:
   format:
     description: The format to write the coverage files in. Can be 'txt' or 'lcov'.
     required: true
-    default: 'txt'
+    default: 'lcov'
   target-name-filter:
     description: A regular expression that is used to filter coverage files by their target names.
     required: false

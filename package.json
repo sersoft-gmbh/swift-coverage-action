@@ -1,6 +1,6 @@
 {
   "name": "swift-coverage-action",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "description": "A GitHub action that converts Swift / Xcode code coverage files.",
   "main": "dist/index.js",
   "scripts": {

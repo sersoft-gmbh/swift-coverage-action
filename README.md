@@ -25,7 +25,7 @@ Default: `./.swiftcov`
 ### `format`
 
 The format to write the coverage files in. Can be 'txt' or 'lcov'.<br/>
-Default: `txt`
+Default: `lcov`
 
 ### `target-name-filter`
 
@@ -51,14 +51,14 @@ The JSON encoded array of (absolute) file paths that were written. They are all 
 
 Use the following snippet after running tests with Swift or Xcode to convert those coverage files:
 ```yaml
-uses: sersoft-gmbh/swift-coverage-action@v2
+uses: sersoft-gmbh/swift-coverage-action@v3
 ```
 
 ### Codecov Action v2
 
 To use this action together with [codecov/codecov-action@v2](https://github.com/codecov/codecov-action), you need to convert the output to a comma separated string:
 ```yaml
-- uses: sersoft-gmbh/swift-coverage-action@v2
+- uses: sersoft-gmbh/swift-coverage-action@v3
   id: coverage-files
 - uses: codecov/codecov-action@v2
   with:
