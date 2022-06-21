@@ -24,7 +24,7 @@ Default: `./.swiftcov`
 
 ### `format`
 
-The format to write the coverage files in. Can be 'txt' or 'lcov'.<br/>
+The format to write the coverage files in. Can be 'lcov' or 'txt'.<br/>
 Default: `lcov`
 
 ### `target-name-filter`

@@ -13,7 +13,7 @@ inputs:
     required: true
     default: './.swiftcov'
   format:
-    description: The format to write the coverage files in. Can be 'txt' or 'lcov'.
+    description: The format to write the coverage files in. Can be 'lcov' or 'txt'.
     required: true
     default: 'lcov'
   target-name-filter:
