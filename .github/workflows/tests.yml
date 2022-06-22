@@ -58,7 +58,7 @@ jobs:
       - name: Generate action code
         if: github.event_name == 'pull_request'
         run: npm run deploy
-      - uses: sersoft-gmbh/xcodebuild-action@v1.8.0
+      - uses: sersoft-gmbh/xcodebuild-action@v2.0.0
         if: runner.os == 'macOS'
         with:
           spm-package: __test__/TestProject
@@ -113,7 +113,7 @@ jobs:
       - name: Generate action code
         if: github.event_name == 'pull_request'
         run: npm run deploy
-      - uses: sersoft-gmbh/xcodebuild-action@v1.8.0
+      - uses: sersoft-gmbh/xcodebuild-action@v2.0.0
         if: runner.os == 'macOS'
         with:
           spm-package: __test__/TestProject
