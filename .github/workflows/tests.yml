@@ -9,7 +9,7 @@ on:
 
 jobs:
   deploy-action-code:
-    if: github.event_name == 'push'
+    if: ${{ github.event_name == 'push' }}
     name: Deploy Action Code
     runs-on: ubuntu-latest
     steps:
@@ -17,49 +17,51 @@ jobs:
         run: sudo npm i -g typescript @vercel/ncc
       - uses: actions/checkout@v3.1.0
         with:
-          token: ${{secrets.BOT_TOKEN}}
+          token: ${{ secrets.BOT_TOKEN }}
       - name: Generate action code
         run: npm run deploy
       - name: Configure repository
+        env:
+          BOT_USERNAME: ${{ secrets.BOT_USERNAME }}
         run: |
-          git config user.name "${{secrets.BOT_USERNAME}}"
-          git config user.email "${{secrets.BOT_USERNAME}}@users.noreply.github.com"
+          git config user.name "${BOT_USERNAME}"
+          git config user.email "${BOT_USERNAME}@users.noreply.github.com"
       - name: Commit changes
         run: |
           if ! git diff --exit-code --quiet; then
             git add .
-            git commit -m "[AUTO] Update generated code"
+            git commit -m '[AUTO] Update generated code'
             git push
           fi
 
   test-defaults:
     needs: deploy-action-code
-    if: always() && !failure() && !cancelled()
+    if: ${{ always() && !failure() && !cancelled() }}
     name: Test Default Inputs
     strategy:
       matrix:
         os: [ macos-12, ubuntu-latest ]
-    runs-on: ${{matrix.os}}
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: maxim-lobanov/setup-xcode@v1.5.0
-        if: runner.os == 'macOS'
+        if: ${{ runner.os == 'macOS' }}
         with:
-          xcode-version: ^13.4
+          xcode-version: ^14.0
       - name: Install Swift
-        if: runner.os == 'Linux'
+        if: ${{ runner.os == 'Linux' }}
         uses: sersoft-gmbh/swifty-linux-action@v2.1.0
         with:
           release-version: 5.6
-          github-token: ${{secrets.GITHUB_TOKEN}}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install dependencies
-        if: github.event_name == 'pull_request'
+        if: ${{ github.event_name == 'pull_request' }}
         run: sudo npm i -g typescript @vercel/ncc
       - uses: actions/checkout@v3.1.0
       - name: Generate action code
-        if: github.event_name == 'pull_request'
+        if: ${{ github.event_name == 'pull_request' }}
         run: npm run deploy
       - uses: sersoft-gmbh/xcodebuild-action@v2.0.0
-        if: runner.os == 'macOS'
+        if: ${{ runner.os == 'macOS' }}
         with:
           spm-package: __test__/TestProject
           scheme: TestProject-Package
@@ -71,9 +73,9 @@ jobs:
         working-directory: __test__/TestProject
       - run: ln -s __test__/TestProject/.build .build
       - uses: sersoft-gmbh/swift-coverage-action@main
-        if: github.event_name == 'push'
+        if: ${{ github.event_name == 'push' }}
       - uses: './'
-        if: github.event_name == 'pull_request'
+        if: ${{ github.event_name == 'pull_request' }}
       - name: Check for produced coverage files
         run: | # check that the directory exists and contains files
           test -d '.swiftcov' && \
@@ -81,7 +83,7 @@ jobs:
 
   test-customized:
     needs: deploy-action-code
-    if: always() && !failure() && !cancelled()
+    if: ${{ always() && !failure() && !cancelled() }}
     name: Test Customized Inputs
     strategy:
       matrix:
@@ -94,27 +96,27 @@ jobs:
         .derived-data
       INPUT_TARGET_NAME_FILTER: TestProject(1|Package).*
       INPUT_OUTPUT_FOLDER: .swiftcov-test
-    runs-on: ${{matrix.os}}
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: maxim-lobanov/setup-xcode@v1.5.0
-        if: runner.os == 'macOS'
+        if: ${{ runner.os == 'macOS' }}
         with:
-          xcode-version: ^13.4
+          xcode-version: ^14.0
       - name: Install Swift
-        if: runner.os == 'Linux'
+        if: ${{ runner.os == 'Linux' }}
         uses: sersoft-gmbh/swifty-linux-action@v2.1.0
         with:
           release-version: 5.6
-          github-token: ${{secrets.GITHUB_TOKEN}}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install dependencies
-        if: github.event_name == 'pull_request'
+        if: ${{ github.event_name == 'pull_request' }}
         run: sudo npm i -g typescript @vercel/ncc
       - uses: actions/checkout@v3.1.0
       - name: Generate action code
-        if: github.event_name == 'pull_request'
+        if: ${{ github.event_name == 'pull_request' }}
         run: npm run deploy
       - uses: sersoft-gmbh/xcodebuild-action@v2.0.0
-        if: runner.os == 'macOS'
+        if: ${{ runner.os == 'macOS' }}
         with:
           spm-package: __test__/TestProject
           scheme: TestProject-Package
@@ -122,34 +124,37 @@ jobs:
           action: test
           enable-code-coverage: true
           parallel-testing-enabled: true
-          derived-data-path: ${{env.INPUT_DERIVED_DATA}}
+          derived-data-path: ${{ env.INPUT_DERIVED_DATA }}
       - run: swift test --parallel --enable-code-coverage
         working-directory: __test__/TestProject
       - uses: sersoft-gmbh/swift-coverage-action@main
-        if: github.event_name == 'push'
+        if: ${{ github.event_name == 'push' }}
         with:
-          format: ${{matrix.cov-format}}
-          search-paths: ${{env.INPUT_SEARCH_PATHS}}
-          output: ${{env.INPUT_OUTPUT_FOLDER}}
-          target-name-filter: ${{env.INPUT_TARGET_NAME_FILTER}}
+          format: ${{ matrix.cov-format }}
+          search-paths: ${{ env.INPUT_SEARCH_PATHS }}
+          output: ${{ env.INPUT_OUTPUT_FOLDER }}
+          target-name-filter: ${{ env.INPUT_TARGET_NAME_FILTER }}
       - uses: './'
-        if: github.event_name == 'pull_request'
+        if: ${{ github.event_name == 'pull_request' }}
         with:
-          format: ${{matrix.cov-format}}
-          search-paths: ${{env.INPUT_SEARCH_PATHS}}
-          output: ${{env.INPUT_OUTPUT_FOLDER}}
-          target-name-filter: ${{env.INPUT_TARGET_NAME_FILTER}}
+          format: ${{ matrix.cov-format }}
+          search-paths: ${{ env.INPUT_SEARCH_PATHS }}
+          output: ${{ env.INPUT_OUTPUT_FOLDER }}
+          target-name-filter: ${{ env.INPUT_TARGET_NAME_FILTER }}
       - name: Check for produced coverage files
+        env:
+          RUNNER_OS: ${{ runner.os }}
+          COV_FORMAT: ${{ matrix.cov-format }}
         run: | # check that the directory exists and contains files
-          test -d '${{env.INPUT_OUTPUT_FOLDER}}' && { \
+          test -d "${INPUT_OUTPUT_FOLDER}" && { \
             { \
-              test '${{runner.os}}' == 'macOS' && \
-              test "$(find '${{env.INPUT_OUTPUT_FOLDER}}' -name 'TestProject1*.${{matrix.cov-format}}')" != ''; \
+              test "${RUNNER_OS}" == 'macOS' && \
+              test "$(find "${INPUT_OUTPUT_FOLDER}" -name "TestProject1*.${COV_FORMAT}")" != ''; \
             } \
             || \
             { \
-              test '${{runner.os}}' == 'Linux' && \
-              test "$(find '${{env.INPUT_OUTPUT_FOLDER}}' -name 'TestProjectPackage*.${{matrix.cov-format}}')" != ''; \
+              test "${RUNNER_OS}" == 'Linux' && \
+              test "$(find "${INPUT_OUTPUT_FOLDER}" -name "TestProjectPackage*.${COV_FORMAT}")" != ''; \
             }; \
           } && \
-          test "$(find '${{env.INPUT_OUTPUT_FOLDER}}' -name 'TestProject2*.${{matrix.cov-format}}')" == ''
+          test "$(find "${INPUT_OUTPUT_FOLDER}" -name "TestProject2*.${COV_FORMAT}")" == ''
