@@ -41,7 +41,7 @@ jobs:
         os: [ macos-12, ubuntu-latest ]
     runs-on: ${{matrix.os}}
     steps:
-      - uses: maxim-lobanov/setup-xcode@v1.4.1
+      - uses: maxim-lobanov/setup-xcode@v1.5.0
         if: runner.os == 'macOS'
         with:
           xcode-version: ^13.4
@@ -96,7 +96,7 @@ jobs:
       INPUT_OUTPUT_FOLDER: .swiftcov-test
     runs-on: ${{matrix.os}}
     steps:
-      - uses: maxim-lobanov/setup-xcode@v1.4.1
+      - uses: maxim-lobanov/setup-xcode@v1.5.0
         if: runner.os == 'macOS'
         with:
           xcode-version: ^13.4
