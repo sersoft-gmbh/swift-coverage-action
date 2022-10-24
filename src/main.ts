@@ -1,14 +1,12 @@
 import * as core from '@actions/core';
 import * as exec from '@actions/exec';
 import * as io from '@actions/io';
-import { promises as fs, existsSync as exists, PathLike } from 'fs';
+import { existsSync as exists, PathLike, promises as fs } from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 
 async function runCmd(cmd: string, args?: string[]): Promise<string> {
-    const output = await exec.getExecOutput(cmd, args, {
-        silent: !core.isDebug(),
-    });
+    const output = await exec.getExecOutput(cmd, args, { silent: !core.isDebug() });
     if (output.stderr.length > 0)
         core.warning(`Command execution wrote lines to stderr:\n${output.stderr}`);
     return output.stdout;
@@ -176,10 +174,11 @@ async function main() {
                         converted = await runCmd(cmd, args);
                     } catch (error: any) {
                         const msg = `Failed to convert ${dest}: ${error}`;
-                        if (error instanceof Error)
+                        if (error instanceof Error) {
                             conversionFailures.push(error);
-                        else
+                        } else {
                             conversionFailures.push(new Error(msg));
+                        }
                         if (ignoreConversionFailures) {
                             core.info(msg);
                         } else {
