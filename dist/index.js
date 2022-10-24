@@ -37,9 +37,7 @@ const fs_1 = __nccwpck_require__(147);
 const path = __importStar(__nccwpck_require__(17));
 const os = __importStar(__nccwpck_require__(37));
 async function runCmd(cmd, args) {
-    const output = await exec.getExecOutput(cmd, args, {
-        silent: !core.isDebug(),
-    });
+    const output = await exec.getExecOutput(cmd, args, { silent: !core.isDebug() });
     if (output.stderr.length > 0)
         core.warning(`Command execution wrote lines to stderr:\n${output.stderr}`);
     return output.stdout;
@@ -198,10 +196,12 @@ async function main() {
                     }
                     catch (error) {
                         const msg = `Failed to convert ${dest}: ${error}`;
-                        if (error instanceof Error)
+                        if (error instanceof Error) {
                             conversionFailures.push(error);
-                        else
+                        }
+                        else {
                             conversionFailures.push(new Error(msg));
+                        }
                         if (ignoreConversionFailures) {
                             core.info(msg);
                         }
