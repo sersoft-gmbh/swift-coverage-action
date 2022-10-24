@@ -3,40 +3,14 @@ name: Tests
 on:
   push:
     branches: [ main ]
-    paths-ignore: [ 'dist/*.js' ]
+    paths: 
+      - 'dist/*.js'
+      - '.github/workflows/tests.yml'
   pull_request:
     branches: [ main ]
 
 jobs:
-  deploy-action-code:
-    if: ${{ github.event_name == 'push' }}
-    name: Deploy Action Code
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install depenedencies
-        run: sudo npm i -g typescript @vercel/ncc
-      - uses: actions/checkout@v3.1.0
-        with:
-          token: ${{ secrets.BOT_TOKEN }}
-      - name: Generate action code
-        run: npm run deploy
-      - name: Configure repository
-        env:
-          BOT_USERNAME: ${{ secrets.BOT_USERNAME }}
-        run: |
-          git config user.name "${BOT_USERNAME}"
-          git config user.email "${BOT_USERNAME}@users.noreply.github.com"
-      - name: Commit changes
-        run: |
-          if ! git diff --exit-code --quiet; then
-            git add .
-            git commit -m '[AUTO] Update generated code'
-            git push
-          fi
-
   test-defaults:
-    needs: deploy-action-code
-    if: ${{ always() && !failure() && !cancelled() }}
     name: Test Default Inputs
     strategy:
       matrix:
@@ -49,7 +23,7 @@ jobs:
           xcode-version: ^14.0
       - name: Install Swift
         if: ${{ runner.os == 'Linux' }}
-        uses: sersoft-gmbh/swifty-linux-action@v2.1.0
+        uses: sersoft-gmbh/swifty-linux-action@v2.1.1
         with:
           release-version: 5.6
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -60,7 +34,7 @@ jobs:
       - name: Generate action code
         if: ${{ github.event_name == 'pull_request' }}
         run: npm run deploy
-      - uses: sersoft-gmbh/xcodebuild-action@v2.0.0
+      - uses: sersoft-gmbh/xcodebuild-action@v2.0.1
         if: ${{ runner.os == 'macOS' }}
         with:
           spm-package: __test__/TestProject
@@ -82,8 +56,6 @@ jobs:
           test "$(find '.swiftcov' -name '*.lcov')" != ''
 
   test-customized:
-    needs: deploy-action-code
-    if: ${{ always() && !failure() && !cancelled() }}
     name: Test Customized Inputs
     strategy:
       matrix:
@@ -104,7 +76,7 @@ jobs:
           xcode-version: ^14.0
       - name: Install Swift
         if: ${{ runner.os == 'Linux' }}
-        uses: sersoft-gmbh/swifty-linux-action@v2.1.0
+        uses: sersoft-gmbh/swifty-linux-action@v2.1.1
         with:
           release-version: 5.6
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -115,7 +87,7 @@ jobs:
       - name: Generate action code
         if: ${{ github.event_name == 'pull_request' }}
         run: npm run deploy
-      - uses: sersoft-gmbh/xcodebuild-action@v2.0.0
+      - uses: sersoft-gmbh/xcodebuild-action@v2.0.1
         if: ${{ runner.os == 'macOS' }}
         with:
           spm-package: __test__/TestProject
