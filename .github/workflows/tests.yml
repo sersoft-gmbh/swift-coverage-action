@@ -17,24 +17,21 @@ jobs:
         os: [ macos-12, ubuntu-latest ]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: maxim-lobanov/setup-xcode@v1.5.1
+      - uses: maxim-lobanov/setup-xcode@v1
         if: ${{ runner.os == 'macOS' }}
         with:
           xcode-version: ^14.0
       - name: Install Swift
         if: ${{ runner.os == 'Linux' }}
-        uses: sersoft-gmbh/swifty-linux-action@v2.1.1
+        uses: sersoft-gmbh/swifty-linux-action@v2
         with:
           release-version: 5.7
           github-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Install dependencies
-        if: ${{ github.event_name == 'pull_request' }}
-        run: sudo npm i -g typescript @vercel/ncc
-      - uses: actions/checkout@v3.5.0
+      - uses: actions/checkout@v3
       - name: Generate action code
         if: ${{ github.event_name == 'pull_request' }}
-        run: npm run deploy
-      - uses: sersoft-gmbh/xcodebuild-action@v2.0.1
+        uses: ./.github/actions/generate-action-code
+      - uses: sersoft-gmbh/xcodebuild-action@v2
         if: ${{ runner.os == 'macOS' }}
         with:
           spm-package: __test__/TestProject
@@ -70,24 +67,21 @@ jobs:
       INPUT_OUTPUT_FOLDER: .swiftcov-test
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: maxim-lobanov/setup-xcode@v1.5.1
+      - uses: maxim-lobanov/setup-xcode@v1
         if: ${{ runner.os == 'macOS' }}
         with:
           xcode-version: ^14.0
       - name: Install Swift
         if: ${{ runner.os == 'Linux' }}
-        uses: sersoft-gmbh/swifty-linux-action@v2.1.1
+        uses: sersoft-gmbh/swifty-linux-action@v2
         with:
           release-version: 5.7
           github-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Install dependencies
-        if: ${{ github.event_name == 'pull_request' }}
-        run: sudo npm i -g typescript @vercel/ncc
-      - uses: actions/checkout@v3.5.0
+      - uses: actions/checkout@v3
       - name: Generate action code
         if: ${{ github.event_name == 'pull_request' }}
-        run: npm run deploy
-      - uses: sersoft-gmbh/xcodebuild-action@v2.0.1
+        uses: ./.github/actions/generate-action-code
+      - uses: sersoft-gmbh/xcodebuild-action@v2
         if: ${{ runner.os == 'macOS' }}
         with:
           spm-package: __test__/TestProject
