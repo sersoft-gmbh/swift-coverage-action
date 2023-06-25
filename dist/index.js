@@ -37,6 +37,9 @@ const fs_1 = __nccwpck_require__(147);
 const path = __importStar(__nccwpck_require__(17));
 const os = __importStar(__nccwpck_require__(37));
 async function runCmd(cmd, args) {
+    var _a;
+    if (core.isDebug())
+        core.debug(`Running command: ${cmd} ${(_a = args === null || args === void 0 ? void 0 : args.join(' ')) !== null && _a !== void 0 ? _a : ''}`);
     const output = await exec.getExecOutput(cmd, args, { silent: !core.isDebug() });
     if (output.stderr.length > 0)
         core.warning(`Command execution wrote lines to stderr:\n${output.stderr}`);
@@ -166,7 +169,7 @@ async function main() {
                                 dest = path.join(macOSPath, proj.replace(' ', ''));
                             }
                             if (!await fileExists(dest)) {
-                                core.warning(`Couldn't find a suitable target file in ${entry.path}. Using the path itself now...`);
+                                core.warning(`Couldn't find a suitable target file in ${entry.path}. Using the path itself...`);
                                 dest = entry.path;
                             }
                         }
