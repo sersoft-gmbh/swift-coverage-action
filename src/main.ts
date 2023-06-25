@@ -6,6 +6,8 @@ import * as path from 'path';
 import * as os from 'os';
 
 async function runCmd(cmd: string, args?: string[]): Promise<string> {
+    if (core.isDebug())
+        core.debug(`Running command: ${cmd} ${args?.join(' ') ?? ''}`);
     const output = await exec.getExecOutput(cmd, args, { silent: !core.isDebug() });
     if (output.stderr.length > 0)
         core.warning(`Command execution wrote lines to stderr:\n${output.stderr}`);
@@ -146,7 +148,7 @@ async function main() {
                                 dest = path.join(macOSPath, proj.replace(' ', ''));
                             }
                             if (!await fileExists(dest)) {
-                                core.warning(`Couldn't find a suitable target file in ${entry.path}. Using the path itself now...`);
+                                core.warning(`Couldn't find a suitable target file in ${entry.path}. Using the path itself...`);
                                 dest = entry.path;
                             }
                         }
