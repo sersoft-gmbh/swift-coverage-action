@@ -37,9 +37,6 @@ const fs_1 = __nccwpck_require__(147);
 const path = __importStar(__nccwpck_require__(17));
 const os = __importStar(__nccwpck_require__(37));
 async function runCmd(cmd, args) {
-    var _a;
-    if (core.isDebug())
-        core.debug(`Running command: ${cmd} ${(_a = args === null || args === void 0 ? void 0 : args.join(' ')) !== null && _a !== void 0 ? _a : ''}`);
     const output = await exec.getExecOutput(cmd, args, { silent: !core.isDebug() });
     if (output.stderr.length > 0)
         core.warning(`Command execution wrote lines to stderr:\n${output.stderr}`);
@@ -130,11 +127,14 @@ async function main() {
                 const profDataDir = path.dirname(profDataFile);
                 const xcodeRegex = /(Build).*/;
                 let buildDir;
+                let isXcode;
                 if (xcodeRegex.test(profDataDir)) {
                     buildDir = profDataDir.replace(xcodeRegex, '$1');
+                    isXcode = true;
                 }
                 else { // SPM
                     buildDir = path.dirname(profDataDir);
+                    isXcode = false;
                 }
                 core.debug(`Checking contents of build dir ${buildDir} of prof data file ${profDataFile}`);
                 for await (const entry of walk(buildDir, false)) {
@@ -142,6 +142,10 @@ async function main() {
                     if (!typesRegex.test(entry.path))
                         continue;
                     entry.skipDescendants(); // Don't process any further files inside this container.
+                    if (isXcode && !/\/Build[^/]*\/Products\//.test(entry.path)) {
+                        core.info(`Skipping ${entry.path} because it is not in a Xcode build products directory...`);
+                        continue;
+                    }
                     const type = entry.path.replace(typesRegex, '$1');
                     core.debug(`Found match of type ${type}: ${entry.path}`);
                     const proj = entry.path
