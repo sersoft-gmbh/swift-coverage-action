@@ -6,8 +6,6 @@ import * as path from 'path';
 import * as os from 'os';
 
 async function runCmd(cmd: string, args?: string[]): Promise<string> {
-    if (core.isDebug())
-        core.debug(`Running command: ${cmd} ${args?.join(' ') ?? ''}`);
     const output = await exec.getExecOutput(cmd, args, { silent: !core.isDebug() });
     if (output.stderr.length > 0)
         core.warning(`Command execution wrote lines to stderr:\n${output.stderr}`);
@@ -110,16 +108,23 @@ async function main() {
                 const profDataDir = path.dirname(profDataFile);
                 const xcodeRegex = /(Build).*/;
                 let buildDir: string;
+                let isXcode: boolean;
                 if (xcodeRegex.test(profDataDir)) {
                     buildDir = profDataDir.replace(xcodeRegex, '$1');
+                    isXcode = true;
                 } else { // SPM
                     buildDir = path.dirname(profDataDir);
+                    isXcode = false;
                 }
                 core.debug(`Checking contents of build dir ${buildDir} of prof data file ${profDataFile}`);
                 for await (const entry of walk(buildDir, false)) {
                     const typesRegex = /.*\.(app|framework|xctest)$/;
                     if (!typesRegex.test(entry.path)) continue;
                     entry.skipDescendants(); // Don't process any further files inside this container.
+                    if (isXcode && !/\/Build[^/]*\/Products\//.test(entry.path)) {
+                        core.info(`Skipping ${entry.path} because it is not in a Xcode build products directory...`);
+                        continue;
+                    }
                     const type = entry.path.replace(typesRegex, '$1');
                     core.debug(`Found match of type ${type}: ${entry.path}`);
                     const proj = entry.path
