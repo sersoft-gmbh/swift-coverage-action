@@ -31,13 +31,13 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(186));
-const exec = __importStar(__nccwpck_require__(514));
+const exec_1 = __nccwpck_require__(514);
 const io = __importStar(__nccwpck_require__(436));
 const fs_1 = __nccwpck_require__(147);
 const path = __importStar(__nccwpck_require__(17));
 const os = __importStar(__nccwpck_require__(37));
-async function runCmd(cmd, args) {
-    const output = await exec.getExecOutput(cmd, args, { silent: !core.isDebug() });
+async function runCmd(cmd, ...args) {
+    const output = await (0, exec_1.getExecOutput)(cmd, args.length <= 0 ? undefined : args, { silent: !core.isDebug() });
     if (output.stderr.length > 0)
         core.warning(`Command execution wrote lines to stderr:\n${output.stderr}`);
     return output.stdout;
@@ -199,22 +199,18 @@ async function main() {
                     args.push('-instr-profile', profDataFile, dest);
                     let converted;
                     try {
-                        converted = await runCmd(cmd, args);
+                        converted = await runCmd(cmd, ...args);
                     }
                     catch (error) {
                         const msg = `Failed to convert ${dest}: ${error}`;
-                        if (error instanceof Error) {
+                        if (error instanceof Error)
                             conversionFailures.push(error);
-                        }
-                        else {
+                        else
                             conversionFailures.push(new Error(msg));
-                        }
-                        if (ignoreConversionFailures) {
+                        if (ignoreConversionFailures)
                             core.info(msg);
-                        }
-                        else {
+                        else
                             core.error(msg);
-                        }
                         continue;
                     }
                     const projFileName = proj.replace(/\s/g, '');
@@ -226,12 +222,10 @@ async function main() {
                 }
             }
             if (conversionFailures.length > 0) {
-                if (ignoreConversionFailures) {
+                if (ignoreConversionFailures)
                     core.info(`Failed to convert ${conversionFailures.length} file(s)...`);
-                }
-                else {
+                else
                     throw new Error('Conversion failures:\n' + conversionFailures.map(e => e.toString()).join('\n'));
-                }
             }
             core.info(`Processed ${outFiles.length} file(s):\n${outFiles.join('\n')}`);
             return outFiles;

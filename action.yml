@@ -31,7 +31,7 @@ outputs:
   files:
     description: The JSON-encoded array of (absolute) file paths that were converted.
 runs:
-  using: node16
+  using: node20
   main: dist/index.js
 branding:
   color: gray-dark

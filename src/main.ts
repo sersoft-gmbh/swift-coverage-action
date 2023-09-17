@@ -1,12 +1,12 @@
 import * as core from '@actions/core';
-import * as exec from '@actions/exec';
+import { getExecOutput } from '@actions/exec';
 import * as io from '@actions/io';
 import { existsSync as exists, PathLike, promises as fs } from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 
-async function runCmd(cmd: string, args?: string[]): Promise<string> {
-    const output = await exec.getExecOutput(cmd, args, { silent: !core.isDebug() });
+async function runCmd(cmd: string, ...args: string[]): Promise<string> {
+    const output = await getExecOutput(cmd, args.length <= 0 ? undefined : args, { silent: !core.isDebug() });
     if (output.stderr.length > 0)
         core.warning(`Command execution wrote lines to stderr:\n${output.stderr}`);
     return output.stdout;
@@ -14,7 +14,7 @@ async function runCmd(cmd: string, args?: string[]): Promise<string> {
 
 enum CovFormat {
     txt = 'txt',
-    lcov = 'lcov'
+    lcov = 'lcov',
 }
 
 declare type WalkEntry = {
@@ -67,8 +67,7 @@ async function main() {
         .replace(/(~|\$HOME|\${HOME})/g, os.homedir));
     const _format = core.getInput('format', { required: true })
     const format = CovFormat[_format as keyof typeof CovFormat];
-    if (!format)
-        throw new Error(`Invalid format: ${_format}`);
+    if (!format) throw new Error(`Invalid format: ${_format}`);
     const _targetNameFilter = core.getInput('target-name-filter');
     const targetNameFilter = _targetNameFilter ? new RegExp(_targetNameFilter) : null;
     const ignoreConversionFailures = core.getBooleanInput('ignore-conversion-failures');
@@ -175,22 +174,18 @@ async function main() {
                             fileEnding = 'lcov';
                             break;
                     }
-                    args.push('-instr-profile', profDataFile, dest)
+                    args.push('-instr-profile', profDataFile, dest);
                     let converted: string;
                     try {
-                        converted = await runCmd(cmd, args);
+                        converted = await runCmd(cmd, ...args);
                     } catch (error: any) {
                         const msg = `Failed to convert ${dest}: ${error}`;
-                        if (error instanceof Error) {
+                        if (error instanceof Error)
                             conversionFailures.push(error);
-                        } else {
+                        else
                             conversionFailures.push(new Error(msg));
-                        }
-                        if (ignoreConversionFailures) {
-                            core.info(msg);
-                        } else {
-                            core.error(msg);
-                        }
+                        if (ignoreConversionFailures) core.info(msg);
+                        else core.error(msg);
                         continue;
                     }
                     const projFileName = proj.replace(/\s/g, '');
@@ -202,11 +197,10 @@ async function main() {
                 }
             }
             if (conversionFailures.length > 0) {
-                if (ignoreConversionFailures) {
+                if (ignoreConversionFailures)
                     core.info(`Failed to convert ${conversionFailures.length} file(s)...`);
-                } else {
+                else
                     throw new Error('Conversion failures:\n' + conversionFailures.map(e => e.toString()).join('\n'));
-                }
             }
             core.info(`Processed ${outFiles.length} file(s):\n${outFiles.join('\n')}`);
             return outFiles;
