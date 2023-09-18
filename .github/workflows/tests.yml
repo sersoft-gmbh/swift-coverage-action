@@ -31,7 +31,7 @@ jobs:
       - name: Generate action code
         if: ${{ github.event_name == 'pull_request' }}
         uses: ./.github/actions/generate-action-code
-      - uses: sersoft-gmbh/xcodebuild-action@v2
+      - uses: sersoft-gmbh/xcodebuild-action@v3
         if: ${{ runner.os == 'macOS' }}
         with:
           spm-package: __test__/TestProject
@@ -81,7 +81,7 @@ jobs:
       - name: Generate action code
         if: ${{ github.event_name == 'pull_request' }}
         uses: ./.github/actions/generate-action-code
-      - uses: sersoft-gmbh/xcodebuild-action@v2
+      - uses: sersoft-gmbh/xcodebuild-action@v3
         if: ${{ runner.os == 'macOS' }}
         with:
           spm-package: __test__/TestProject
