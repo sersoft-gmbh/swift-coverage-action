@@ -102,15 +102,25 @@ jobs:
           RUNNER_OS: ${{ runner.os }}
           COV_FORMAT: ${{ matrix.cov-format }}
         run: | # check that the directory exists and contains files
-          test -d "${INPUT_OUTPUT_FOLDER}" && { \
-            { \
-              test "${RUNNER_OS}" == 'macOS' && \
-              test "$(find "${INPUT_OUTPUT_FOLDER}" -name "TestProject1*.${COV_FORMAT}")" != ''; \
-            } \
-            || \
-            { \
-              test "${RUNNER_OS}" == 'Linux' && \
-              test "$(find "${INPUT_OUTPUT_FOLDER}" -name "TestProjectPackage*.${COV_FORMAT}")" != ''; \
-            }; \
-          } && \
-          test "$(find "${INPUT_OUTPUT_FOLDER}" -name "TestProject2*.${COV_FORMAT}")" == ''
+          if [ ! -d "${INPUT_OUTPUT_FOLDER}" ]; then
+            echo '::error::Output folder does not exist!'
+            exit 1
+          fi
+          if [ "$(find "${INPUT_OUTPUT_FOLDER}" -name "TestProject2*.${COV_FORMAT}")" = '' ]; then
+              echo '::error::Coverage files for incorrect project found!'
+              exit 1
+          fi
+          if [ "${RUNNER_OS}" = 'macOS' ]; then
+            if [ "$(find "${INPUT_OUTPUT_FOLDER}" -name "TestProject1*.${COV_FORMAT}")" == '' ]; then
+              echo '::error::No coverage files found!'
+              exit 1
+            fi
+          elif [ "${RUNNER_OS}" = 'Linux' ]; then
+            if [ "$(find "${INPUT_OUTPUT_FOLDER}" -name "TestProjectPackage*.${COV_FORMAT}")" == '' ]; then
+              echo '::error::No coverage files found!'
+              exit 1
+            fi
+          else
+            echo '::error::Unsupported OS!'
+            exit 1
+          fi
