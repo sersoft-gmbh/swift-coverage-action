@@ -3,7 +3,7 @@ name: Tests
 on:
   push:
     branches: [ main ]
-    paths: 
+    paths:
       - 'dist/*.js'
       - '.github/workflows/tests.yml'
   pull_request:
@@ -14,19 +14,14 @@ jobs:
     name: Test Default Inputs
     strategy:
       matrix:
-        os: [ macos-12, ubuntu-latest ]
+        os: [ macos-14, ubuntu-latest ]
     runs-on: ${{ matrix.os }}
+    container: ${{ runner.os == 'Linux' && 'swift:5.9' || '' }}
     steps:
       - uses: maxim-lobanov/setup-xcode@v1
         if: ${{ runner.os == 'macOS' }}
         with:
-          xcode-version: ^14.0
-      - name: Install Swift
-        if: ${{ runner.os == 'Linux' }}
-        uses: sersoft-gmbh/swifty-linux-action@v3
-        with:
-          release-version: 5.7
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          xcode-version: ^15.0
       - uses: actions/checkout@v4
       - name: Generate action code
         if: ${{ github.event_name == 'pull_request' }}
@@ -56,7 +51,7 @@ jobs:
     name: Test Customized Inputs
     strategy:
       matrix:
-        os: [ macos-12, ubuntu-latest ]
+        os: [ macos-14, ubuntu-latest ]
         cov-format: [ 'txt', 'lcov' ]
     env:
       INPUT_DERIVED_DATA: .derived-data
@@ -66,17 +61,12 @@ jobs:
       INPUT_TARGET_NAME_FILTER: TestProject(1|Package).*
       INPUT_OUTPUT_FOLDER: .swiftcov-test
     runs-on: ${{ matrix.os }}
+    container: ${{ runner.os == 'Linux' && 'swift:5.9' || '' }}
     steps:
       - uses: maxim-lobanov/setup-xcode@v1
         if: ${{ runner.os == 'macOS' }}
         with:
-          xcode-version: ^14.0
-      - name: Install Swift
-        if: ${{ runner.os == 'Linux' }}
-        uses: sersoft-gmbh/swifty-linux-action@v3
-        with:
-          release-version: 5.7
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          xcode-version: ^15.0
       - uses: actions/checkout@v4
       - name: Generate action code
         if: ${{ github.event_name == 'pull_request' }}
