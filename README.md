@@ -41,6 +41,10 @@ Default: `'false'`
 If `true`, the action fails if no coverage files were found (output is still set to an empty array).<br/>
 Default: `'false'`
 
+### `ignore-filename-regex`
+
+A regular expression that is used to filter coverage files by their filenames.
+
 ## Outputs
 
 ### `files`

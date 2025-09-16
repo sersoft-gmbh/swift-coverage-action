@@ -18,10 +18,10 @@ enum CovFormat {
 }
 
 declare type WalkEntry = {
-  path: string;
-  isDirectory: boolean;
+    path: string;
+    isDirectory: boolean;
 
-  skipDescendants(): void;
+    skipDescendants(): void;
 };
 
 // Taken and adjusted from https://stackoverflow.com/a/65415138/1388842
@@ -36,7 +36,7 @@ async function* walk(dir: string, onlyFiles: boolean = true): AsyncGenerator<Wal
             if (!skipDesc)
                 yield* walk(res, onlyFiles);
         } else {
-            yield { path: res, isDirectory: false, skipDescendants: () => {} };
+            yield { path: res, isDirectory: false, skipDescendants: () => { } };
         }
     }
 }
@@ -62,7 +62,7 @@ async function main() {
 
     core.startGroup('Validating input');
     const searchPaths = core.getMultilineInput('search-paths', { required: true })
-            .map(p => path.resolve(p.replace(/(~|\$HOME|\${HOME})/g, os.homedir)));
+        .map(p => path.resolve(p.replace(/(~|\$HOME|\${HOME})/g, os.homedir)));
     const outputFolder = path.resolve(core.getInput('output', { required: true })
         .replace(/(~|\$HOME|\${HOME})/g, os.homedir));
     const _format = core.getInput('format', { required: true })
@@ -72,6 +72,8 @@ async function main() {
     const targetNameFilter = _targetNameFilter ? new RegExp(_targetNameFilter) : null;
     const ignoreConversionFailures = core.getBooleanInput('ignore-conversion-failures');
     const failOnEmptyOutput = core.getBooleanInput('fail-on-empty-output');
+    const _ignoreFilenameRegex = core.getInput('ignore-filename-regex');
+    const ignoreFilenameRegex = _ignoreFilenameRegex ? new RegExp(_ignoreFilenameRegex) : null;
     core.endGroup();
 
     await core.group('Setting up paths', async () => {
@@ -175,6 +177,9 @@ async function main() {
                             break;
                     }
                     args.push('-instr-profile', profDataFile, dest);
+                    if (ignoreFilenameRegex) { 
+                        args.push('-ignore-filename-regex', ignoreFilenameRegex.toString()); 
+                    }
                     let converted: string;
                     try {
                         converted = await runCmd(cmd, ...args);
