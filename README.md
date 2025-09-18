@@ -31,6 +31,10 @@ Default: `lcov`
 
 A regular expression that is used to filter coverage files by their target names.
 
+### `ignore-filename-regex`
+
+A regular expression that is used to filter coverage files by their filenames.
+
 ### `ignore-conversion-failures`
 
 If `true`, conversion failures are ignored. If `fail-on-empty-output` is also set to `true`, the action might still fail if all conversions fail.<br/>

@@ -18,10 +18,10 @@ enum CovFormat {
 }
 
 declare type WalkEntry = {
-  path: string;
-  isDirectory: boolean;
+    path: string;
+    isDirectory: boolean;
 
-  skipDescendants(): void;
+    skipDescendants(): void;
 };
 
 // Taken and adjusted from https://stackoverflow.com/a/65415138/1388842
@@ -62,7 +62,7 @@ async function main() {
 
     core.startGroup('Validating input');
     const searchPaths = core.getMultilineInput('search-paths', { required: true })
-            .map(p => path.resolve(p.replace(/(~|\$HOME|\${HOME})/g, os.homedir)));
+        .map(p => path.resolve(p.replace(/(~|\$HOME|\${HOME})/g, os.homedir)));
     const outputFolder = path.resolve(core.getInput('output', { required: true })
         .replace(/(~|\$HOME|\${HOME})/g, os.homedir));
     const _format = core.getInput('format', { required: true })
@@ -70,6 +70,8 @@ async function main() {
     if (!format) throw new Error(`Invalid format: ${_format}`);
     const _targetNameFilter = core.getInput('target-name-filter');
     const targetNameFilter = _targetNameFilter ? new RegExp(_targetNameFilter) : null;
+    const _ignoreFilenameRegex = core.getInput('ignore-filename-regex');
+    const ignoreFilenameRegex = _ignoreFilenameRegex ? new RegExp(_ignoreFilenameRegex) : null;
     const ignoreConversionFailures = core.getBooleanInput('ignore-conversion-failures');
     const failOnEmptyOutput = core.getBooleanInput('fail-on-empty-output');
     core.endGroup();
@@ -175,6 +177,8 @@ async function main() {
                             break;
                     }
                     args.push('-instr-profile', profDataFile, dest);
+                    if (ignoreFilenameRegex)
+                        args.push('-ignore-filename-regex', ignoreFilenameRegex.toString());
                     let converted: string;
                     try {
                         converted = await runCmd(cmd, ...args);
