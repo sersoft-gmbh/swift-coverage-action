@@ -19,6 +19,9 @@ inputs:
   target-name-filter:
     description: A regular expression that is used to filter coverage files by their target names.
     required: false
+  ignore-filename-regex:
+    description: A regular expression that is used to filter coverage files by their filenames.
+    required: false
   ignore-conversion-failures:
     description: If `true`, conversion failures are ignored. If `fail-on-empty-output` is also set to `true`, the action might still fail if all conversions fail.
     required: true
@@ -27,9 +30,6 @@ inputs:
     description: If `true`, the action fails if no coverage files were found (output is still set to an empty array).
     required: true
     default: 'false'
-  ignore-filename-regex:
-    description: A regular expression that is used to filter coverage files by their filenames.
-    required: false
 outputs:
   files:
     description: The JSON-encoded array of (absolute) file paths that were converted.
