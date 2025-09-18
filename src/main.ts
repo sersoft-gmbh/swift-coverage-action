@@ -36,7 +36,7 @@ async function* walk(dir: string, onlyFiles: boolean = true): AsyncGenerator<Wal
             if (!skipDesc)
                 yield* walk(res, onlyFiles);
         } else {
-            yield { path: res, isDirectory: false, skipDescendants: () => { } };
+            yield { path: res, isDirectory: false, skipDescendants: () => {} };
         }
     }
 }
@@ -70,10 +70,10 @@ async function main() {
     if (!format) throw new Error(`Invalid format: ${_format}`);
     const _targetNameFilter = core.getInput('target-name-filter');
     const targetNameFilter = _targetNameFilter ? new RegExp(_targetNameFilter) : null;
-    const ignoreConversionFailures = core.getBooleanInput('ignore-conversion-failures');
-    const failOnEmptyOutput = core.getBooleanInput('fail-on-empty-output');
     const _ignoreFilenameRegex = core.getInput('ignore-filename-regex');
     const ignoreFilenameRegex = _ignoreFilenameRegex ? new RegExp(_ignoreFilenameRegex) : null;
+    const ignoreConversionFailures = core.getBooleanInput('ignore-conversion-failures');
+    const failOnEmptyOutput = core.getBooleanInput('fail-on-empty-output');
     core.endGroup();
 
     await core.group('Setting up paths', async () => {
@@ -177,9 +177,8 @@ async function main() {
                             break;
                     }
                     args.push('-instr-profile', profDataFile, dest);
-                    if (ignoreFilenameRegex) { 
-                        args.push('-ignore-filename-regex', ignoreFilenameRegex.toString()); 
-                    }
+                    if (ignoreFilenameRegex)
+                        args.push('-ignore-filename-regex', ignoreFilenameRegex.toString());
                     let converted: string;
                     try {
                         converted = await runCmd(cmd, ...args);
