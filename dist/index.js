@@ -77,7 +77,7 @@ async function* walk(dir, onlyFiles = true) {
     }
 }
 async function directoryExists(path) {
-    if ((0, fs_1.existsSync)(path))
+    if (!(0, fs_1.existsSync)(path))
         return false;
     const stat = await fs_1.promises.stat(path);
     return stat.isDirectory();
