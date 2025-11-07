@@ -55,7 +55,7 @@ The (JSON encoded) array of (absolute) file paths that were written. They are al
 
 Use the following snippet after running tests with Swift or Xcode to convert those coverage files:
 ```yaml
-uses: sersoft-gmbh/swift-coverage-action@v4
+uses: sersoft-gmbh/swift-coverage-action@v5
 ```
 
 ### Codecov Action (v2 or later)
