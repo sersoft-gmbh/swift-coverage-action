@@ -44,7 +44,7 @@ async function* walk(dir: string, onlyFiles: boolean = true): AsyncGenerator<Wal
 }
 
 async function directoryExists(path: PathLike): Promise<boolean> {
-    if (exists(path)) return false;
+    if (!exists(path)) return false;
     const stat = await fs.stat(path);
     return stat.isDirectory();
 }
