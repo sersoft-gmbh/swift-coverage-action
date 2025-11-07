@@ -9,19 +9,23 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
   test-defaults:
     name: Test Default Inputs
     strategy:
       matrix:
-        os: [ macos-14, ubuntu-latest ]
+        os: [ macos-26, ubuntu-latest ]
     runs-on: ${{ matrix.os }}
-    container: ${{ matrix.os == 'ubuntu-latest' && 'swift:5.9' || '' }}
+    container: ${{ matrix.os == 'ubuntu-latest' && 'swift:6.2' || '' }}
     steps:
       - uses: maxim-lobanov/setup-xcode@v1
         if: ${{ runner.os == 'macOS' }}
         with:
-          xcode-version: ^15.0
+          xcode-version: ^26.0
       - uses: actions/checkout@v5
       - name: Generate action code
         if: ${{ github.event_name == 'pull_request' }}
@@ -51,7 +55,7 @@ jobs:
     name: Test Customized Inputs
     strategy:
       matrix:
-        os: [ macos-14, ubuntu-latest ]
+        os: [ macos-26, ubuntu-latest ]
         cov-format: [ 'txt', 'lcov' ]
     env:
       INPUT_DERIVED_DATA: .derived-data
@@ -61,12 +65,12 @@ jobs:
       INPUT_TARGET_NAME_FILTER: TestProject(1|Package).*
       INPUT_OUTPUT_FOLDER: .swiftcov-test
     runs-on: ${{ matrix.os }}
-    container: ${{ matrix.os == 'ubuntu-latest' && 'swift:5.9' || '' }}
+    container: ${{ matrix.os == 'ubuntu-latest' && 'swift:6.2' || '' }}
     steps:
       - uses: maxim-lobanov/setup-xcode@v1
         if: ${{ runner.os == 'macOS' }}
         with:
-          xcode-version: ^15.0
+          xcode-version: ^26.0
       - uses: actions/checkout@v5
       - name: Generate action code
         if: ${{ github.event_name == 'pull_request' }}

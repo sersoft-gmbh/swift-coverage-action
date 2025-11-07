@@ -1,9 +1,9 @@
 {
   "name": "swift-coverage-action",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "description": "A GitHub action that converts Swift / Xcode code coverage files.",
   "engines": {
-    "node": ">=20"
+    "node": ">=24"
   },
   "exports": {
     ".": "./dist/index.js"
@@ -11,7 +11,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
-    "pack": "rm -rf dist && ncc build lib/main.js -o dist --license license.txt --target es2022"
+    "pack": "rm -rf dist && ncc build lib/main.js -o dist --license license.txt --target es2024"
   },
   "repository": {
     "type": "git",
@@ -33,11 +33,11 @@
   "dependencies": {
     "@actions/core": "^1.11.1",
     "@actions/exec": "^1.1.1",
-    "@actions/io": "^1.1.3"
+    "@actions/io": "^2.0.0"
   },
   "devDependencies": {
-    "@tsconfig/node20": "^20.1.6",
-    "@types/node": "^20.19.24",
+    "@tsconfig/node24": "^24.0.1",
+    "@types/node": "^24.10.0",
     "@vercel/ncc": "^0.38.4",
     "typescript": "^5.9.3"
   }

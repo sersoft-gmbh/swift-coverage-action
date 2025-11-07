@@ -2,7 +2,7 @@
 
 [![Tests](https://github.com/sersoft-gmbh/swift-coverage-action/actions/workflows/tests.yml/badge.svg)](https://github.com/sersoft-gmbh/swift-coverage-action/actions/workflows/tests.yml)
 
-This action converts code coverage files from `swift test` or `xcodebuild` runs for processing with e.g. codecov.
+This action converts code coverage files from `swift test` or `xcodebuild` runs for processing with for example codecov.
 Note that this action does not run any test. Use `swift test`, `xcodebuild` or [xcodebuild-action](https://github.com/sersoft-gmbh/xcodebuild-action) for that.
 
 ## Inputs
@@ -49,7 +49,7 @@ Default: `'false'`
 
 ### `files`
 
-The JSON encoded array of (absolute) file paths that were written. They are all contained inside the directory specified in the `output` input.
+The (JSON encoded) array of (absolute) file paths that were written. They are all contained inside the directory specified in the `output` input.
 
 ## Example Usage
 
@@ -60,9 +60,9 @@ uses: sersoft-gmbh/swift-coverage-action@v4
 
 ### Codecov Action (v2 or later)
 
-To use this action together with [codecov/codecov-action](https://github.com/codecov/codecov-action), you need to convert the output to a comma separated string:
+To use this action together with [codecov/codecov-action](https://github.com/codecov/codecov-action), you need to convert the output to a comma-separated string:
 ```yaml
-- uses: sersoft-gmbh/swift-coverage-action@v4
+- uses: sersoft-gmbh/swift-coverage-action@v5
   id: coverage-files
 - uses: codecov/codecov-action@v3
   with:

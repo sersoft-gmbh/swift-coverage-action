@@ -6,7 +6,9 @@ import * as path from 'path';
 import * as os from 'os';
 
 async function runCmd(cmd: string, ...args: string[]): Promise<string> {
-    const output = await getExecOutput(cmd, args.length <= 0 ? undefined : args, { silent: !core.isDebug() });
+    const output = await getExecOutput(cmd, args.length <= 0 ? undefined : args, {
+        silent: !core.isDebug(),
+    });
     if (output.stderr.length > 0)
         core.warning(`Command execution wrote lines to stderr:\n${output.stderr}`);
     return output.stdout;
@@ -17,12 +19,12 @@ enum CovFormat {
     lcov = 'lcov',
 }
 
-declare type WalkEntry = {
-    path: string;
-    isDirectory: boolean;
+interface WalkEntry {
+    readonly path: string;
+    readonly isDirectory: boolean;
 
     skipDescendants(): void;
-};
+}
 
 // Taken and adjusted from https://stackoverflow.com/a/65415138/1388842
 async function* walk(dir: string, onlyFiles: boolean = true): AsyncGenerator<WalkEntry> {
@@ -42,7 +44,7 @@ async function* walk(dir: string, onlyFiles: boolean = true): AsyncGenerator<Wal
 }
 
 async function directoryExists(path: PathLike): Promise<boolean> {
-    if (!exists(path)) return false;
+    if (exists(path)) return false;
     const stat = await fs.stat(path);
     return stat.isDirectory();
 }
@@ -53,7 +55,7 @@ async function fileExists(path: PathLike): Promise<boolean> {
     return stat.isFile();
 }
 
-async function main() {
+async function main(): Promise<void> {
     switch (process.platform) {
         case 'darwin': break;
         case 'linux': break;
